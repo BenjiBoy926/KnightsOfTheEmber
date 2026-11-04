@@ -1,0 +1,625 @@
+using DG.Tweening;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.TextCore.Text;
+using UnityEngine.Tilemaps;
+
+[RequireComponent(typeof(CharacterStats))]
+[RequireComponent(typeof(CharacterRange))]
+[RequireComponent(typeof(GridSearch))]
+[RequireComponent(typeof(CharacterWalker))]
+[RequireComponent(typeof(CharacterMovePreview))]
+[RequireComponent(typeof(CharacterAttackBehaviour))]
+[RequireComponent(typeof(CharacterHurtBehaviour))]
+[RequireComponent(typeof(CharacterDefendBehaviour))]
+[RequireComponent(typeof(CharacterHealBehaviour))]
+[RequireComponent(typeof(CharacterBeHealedBehaviour))]
+[RequireComponent(typeof(CharacterCancelBehaviour))]
+[RequireComponent(typeof(CharacterUndoRedoBehaviour))]
+[RequireComponent(typeof(CharacterSpeech))]
+[RequireComponent(typeof(CharacterFootfallAudio))]
+public class Character : MonoBehaviour
+{
+    // ── Properties ───────────────────────────────────────────────────────
+
+    // Self
+    public string Name => _name;
+    public Sprite Icon => _icon;
+    public bool IsInBattle => gameObject.activeSelf;
+    public bool IsRanged => _isRanged;
+    public Vector2 Position
+    {
+        get => transform.position;
+        set => transform.position = value;
+    }
+    public static bool IsAnyCharacterActing => _actingCharacters.Count > 0;
+    public bool IsAbleToMove => !IsDead && _stats.CurrentEnergy > 0;
+
+    // Faction
+    public Faction Faction => _faction;
+    public bool CanBeRevived => _faction.CanBeRevived;
+
+    // UIStyle
+    public CharacterUIStyle UIStyle => _uiStyle;
+    public Color EnergyNormalColor => _uiStyle.EnergyNormalColor;
+    public Color EnergyEmptyColor => _uiStyle.EnergyEmptyColor;
+    public Color EnergyNegativeColor => _uiStyle.EnergyNegativeColor;
+
+
+    // Animator
+    public bool IsOneShotAnimationPlaying => _animator.IsOneShotAnimationPlaying;
+    public bool IsRunAnimationPlaying => _animator.IsRunAnimationPlaying;
+
+    // Stats
+    public int BaseHealth => _stats.BaseHealth;
+    public int BaseEnergy => _stats.BaseEnergy;
+    public int CurrentHealth => _stats.CurrentHealth;
+    public int CurrentPower => _stats.CurrentPower;
+    public int CurrentEnergy => _stats.CurrentEnergy;
+    public int TraversalRange => _stats.TraversalRange;
+    public bool IsDead => _stats.IsDead;
+    public bool IsAlive => _stats.IsAlive;
+
+    // Range
+    public HashSet<Vector2Int> AllCellsInRange => _range.AllCells;
+
+    // Battle
+    public float CellWidth => _battle.CellWidth;
+    public float CellHeight => _battle.CellHeight;
+    public Vector2 CellSize => new(_battle.CellWidth, _battle.CellHeight);
+    public Vector2 CurrentCellCenter => _battle.SnapToGrid(Position);
+    public Vector2Int CurrentCell => _battle.WorldToCell(Position);
+    public Faction CurrentFactionTurn => _battle.CurrentFactionTurn;
+    public HashSet<Character> AllCharactersInBattle => _battle.AllCharacters;
+
+    // ── Fields ───────────────────────────────────────────────────────────
+
+    [SerializeField] private string _name;
+    [SerializeField] private Sprite _icon;
+    [SerializeField] private Faction _faction;
+    [SerializeField] private CharacterUIStyle _uiStyle;
+    [SerializeField] private bool _isRanged;
+    [SerializeField] private float _moveToCellCenterDuration = .2f;
+
+    private CharacterAnimator _animator;
+    private CharacterAppearance _appearance;
+    private CharacterUI _ui;
+    private CharacterStats _stats;
+    private CharacterRange _range;
+    private GridSearch _gridSearch;
+    private CharacterWalker _walker;
+    private CharacterMovePreview _preview;
+    private CharacterAttackBehaviour _attackBehaviour;
+    private CharacterHurtBehaviour _hurtBehaviour;
+    private CharacterDefendBehaviour _defendBehaviour;
+    private CharacterHealBehaviour _healBehaviour;
+    private CharacterBeHealedBehaviour _beHealedBehaviour;
+    private CharacterCancelBehaviour _cancelBehaviour;
+    private CharacterUndoRedoBehaviour _undoRedoBehaviour;
+    private CharacterSpeech _speech;
+    private CharacterFootfallAudio _footfallAudio;
+    private Battle _battle;
+    // NOTE: static — must not carry state across scene reloads. Clear on scene unload if needed.
+    private static readonly HashSet<Character> _actingCharacters = new();
+
+    // ── Unity Lifecycle ──────────────────────────────────────────────────
+
+    private void Awake()
+    {
+        _animator = GetComponentInChildren<CharacterAnimator>();
+        _appearance = GetComponentInChildren<CharacterAppearance>();
+        _ui = GetComponentInChildren<CharacterUI>();
+        _stats = GetComponent<CharacterStats>();
+        _range = GetComponent<CharacterRange>();
+        _gridSearch = GetComponent<GridSearch>();
+        _walker = GetComponent<CharacterWalker>();
+        _preview = GetComponent<CharacterMovePreview>();
+        _attackBehaviour = GetComponent<CharacterAttackBehaviour>();
+        _hurtBehaviour = GetComponent<CharacterHurtBehaviour>();
+        _defendBehaviour = GetComponent<CharacterDefendBehaviour>();
+        _healBehaviour = GetComponent<CharacterHealBehaviour>();
+        _beHealedBehaviour = GetComponent<CharacterBeHealedBehaviour>();
+        _cancelBehaviour = GetComponent<CharacterCancelBehaviour>();
+        _undoRedoBehaviour = GetComponent<CharacterUndoRedoBehaviour>();
+        _speech = GetComponent<CharacterSpeech>();
+        _footfallAudio = GetComponent<CharacterFootfallAudio>();
+    }
+
+    private void OnEnable()
+    {
+        if (_battle)
+        {
+            _battle.Register(this);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (_battle)
+        {
+            _battle.Unregister(this);
+        }
+        _actingCharacters.Remove(this);
+    }
+
+    // ── Self ─────────────────────────────────────────────────────────────
+
+    public void SetBattle(Battle battle)
+    {
+        _battle = battle;
+    }
+
+    public void SetIsActing(bool isActing)
+    {
+        if (isActing)
+        {
+            _actingCharacters.Add(this);
+        }
+        else
+        {
+            _actingCharacters.Remove(this);
+        }
+    }
+
+    public Coroutine Attack(Character other)
+    {
+        StopAllCoroutines();
+        IEnumerator sequence = _attackBehaviour.GetSequence(other);
+        return StartCoroutine(sequence);
+    }
+
+    public Coroutine Defend()
+    {
+        StopAllCoroutines();
+        IEnumerator sequence = _defendBehaviour.GetSequence();
+        return StartCoroutine(sequence);
+    }
+
+    public Coroutine Heal(Character other)
+    {
+        StopAllCoroutines();
+        IEnumerator sequence = _healBehaviour.GetSequence(other);
+        return StartCoroutine(sequence);
+    }
+
+    public Coroutine BeHealed(Character other)
+    {
+        StopAllCoroutines();
+        IEnumerator sequence = _beHealedBehaviour.GetSequence(other);
+        return StartCoroutine(sequence);
+    }
+
+    public Coroutine Cancel()
+    {
+        StopAllCoroutines();
+        IEnumerator sequence = _cancelBehaviour.GetSequence();
+        return StartCoroutine(sequence);
+    }
+
+    public IEnumerator BeginMoveSequence(Character other)
+    {
+        SetIsActing(true);
+        RefreshCell();
+
+        if (other)
+        {
+            LookAt(other.Position);
+        }
+        if (other && other.IsAlive)
+        {
+            other.LookAt(Position);
+        }
+        yield return MoveToCellCenter();
+        yield return _battle.GetMoveStartDialogue(this, other);
+    }
+
+    public YieldInstruction MoveToCellCenter()
+    {
+        return transform.DOMove(CurrentCellCenter, _moveToCellCenterDuration).WaitForCompletion();
+    }
+
+    public IEnumerator EndMoveSequence(Character other)
+    {
+        yield return _battle.GetMoveFinishDialogue(this, other);
+
+        if (other)
+        {
+            other.FadeAppearanceToTargetState();
+        }
+        ChangeEnergy(-1);
+        yield return FadeAppearanceToTargetState();
+
+        SetIsActing(false);
+        if (other)
+        {
+            RecordMoveWith(other);
+        }
+        else
+        {
+            RecordMove();
+        }
+        _battle.NotifyCharacterMoveFinished(this, other);
+    }
+
+    public void LookAt(Vector2 position)
+    {
+        Vector2 direction = position - Position;
+        SetDirection(direction);
+    }
+
+    public void PlayIdleAnimation()
+    {
+        SetIsRunning(false);
+        _animator.PlayLoopingAnimation();
+    }
+
+    public bool IsEnemyInCell(Vector2Int cell, out Character enemy)
+    {
+        enemy = GetOccupant(cell);
+        return enemy && enemy.Faction != _faction;
+    }
+
+    public bool IsAllyInCell(Vector2Int cell)
+    {
+        Character occupant = GetOccupant(cell);
+        return occupant && occupant != this && occupant.Faction == _faction;
+    }
+
+    public bool CouldStayInCell(Vector2Int cell)
+    {
+        Character occupant = GetOccupant(cell);
+        return !occupant || occupant == this;
+    }
+
+    public bool ShouldRemoveFromBattlefield()
+    {
+        return IsDead && !_faction.CanBeRevived;
+    }
+
+    public CharacterState ReadState()
+    {
+        return new(_animator.GetDirection(), CurrentCell, new(_stats.CurrentHealth, _stats.CurrentEnergy));
+    }
+
+    // ── Faction ──────────────────────────────────────────────────────────
+
+    public void RegisterAsCommander()
+    {
+        _faction.RegisterCommander(this);
+    }
+
+    public void UnregisterAsCommander()
+    {
+        _faction.UnregisterCommander(this);
+    }
+
+    // ── Animator ─────────────────────────────────────────────────────────
+
+    public void SetAnimationSpeed(float speed)
+    {
+        _animator.SetSpeed(speed);
+    }
+
+    public Coroutine PlayAttackAnimation()
+    {
+        return _animator.Attack();
+    }
+
+    public Coroutine PlayHurtAnimation()
+    {
+        return _animator.Hurt();
+    }
+
+    public Coroutine PlayDieAnimation()
+    {
+        return _animator.Die(); 
+    }
+
+    public void SetDirection(Vector2 direction)
+    {
+        _animator.SetDirection(direction);
+    }
+
+    public Vector2 GetDirection()
+    {
+        return _animator.GetDirection();
+    }
+
+    public void SetIsRunning(bool isRunning)
+    {
+        _animator.SetIsRunning(isRunning);
+    }
+
+    // -- Appearance -------------------------------------------------------
+
+    public YieldInstruction FadeAppearanceToTargetState()
+    {
+        return _appearance.FadeToTargetState();
+    }
+
+    public YieldInstruction FadeAppearanceToTargetState(float duration)
+    {
+        return _appearance.FadeToTargetState(duration);
+    }
+
+    // ── UI ───────────────────────────────────────────────────────────────
+
+    public void ShowUI()
+    {
+        _ui.Show();
+    }
+
+    public void HideUI()
+    {
+        _ui.Hide();
+    }
+
+    public void Preview(CharacterInfo info)
+    {
+        _ui.Preview(info);
+    }
+
+    public void ClearPreview()
+    {
+        _ui.ClearPreview();
+    }
+
+    public void ShowCurrentHealth()
+    {
+        _ui.ShowCurrentHealth();
+    }
+
+    public void AnimateCurrentEnergy()
+    {
+        _ui.AnimateCurrentEnergy();
+    }
+
+    public void ShowCurrentEnergy()
+    {
+        _ui.ShowCurrentEnergy();
+    }
+
+    public void ShowPower()
+    {
+        _ui.ShowPower();
+    }
+
+    public void ShakeHealthUI()
+    {
+        _ui.ShakeHealthUI();
+    }
+
+    // -- UI Theme -------------------------------------------------------
+
+    public Sprite GetHeartSprite(int currentHealth)
+    {
+        return _uiStyle.GetHeartSprite(currentHealth, BaseHealth);
+    }
+
+    public Color GetHealthColor(int currentHealth)
+    {
+        return _uiStyle.GetHealthColor(currentHealth, BaseHealth);
+    }
+
+    public Color GetPowerColor(int currentPower)
+    {
+        // NOTE: don't actually distinguish current and base power yet because
+        // we haven't implemented any mechanics that would change the current power of a character.
+        return _uiStyle.GetPowerColor(currentPower, _stats.CurrentPower);
+    }
+
+    public Color GetEnergyColor(int currentEnergy)
+    {
+        return _uiStyle.GetEnergyColor(currentEnergy);
+    }
+
+    // ── Stats ────────────────────────────────────────────────────────────
+
+    public void TakeDamageFrom(Character other)
+    {
+        _stats.TakeDamageFrom(other);
+    }
+
+    public void RestoreHealth()
+    {
+        _stats.RestoreHealth();
+    }
+
+    public void SetHealth(int health)
+    {
+        _stats.SetHealth(health);
+    }
+
+    public void ChangeEnergy(int delta)
+    {
+        _stats.ChangeEnergy(delta);
+    }
+
+    public void ZeroEnergy()
+    {
+        _stats.ZeroEnergy();
+    }
+
+    public void RefillEnergy()
+    {
+        _stats.RefillEnergy();
+    }
+
+    public void SetEnergy(int energy)
+    {
+        _stats.SetEnergy(energy);
+    }
+
+    // ── Range ────────────────────────────────────────────────────────────
+
+    public void RefreshRange()
+    {
+        _range.Refresh();
+    }
+
+    public void ShowTransparentRange()
+    {
+        _range.ShowTransparentRange();
+    }
+
+    public void ShowOpaqueRange()
+    {
+        _range.ShowOpaqueRange();
+    }
+
+    public void HideRange()
+    {
+        _range.Hide();
+    }
+
+    public Vector2 ClampToStayableCells(Vector2 position)
+    {
+        return _range.ClampToStayableCells(position);
+    }
+
+    public Vector2 ClampToReachableCells(Vector2 input)
+    {
+        return _range.ClampToReachableCells(input);
+    }
+
+    public bool CouldWalkThroughCell(Vector2Int cell)
+    {
+        return _range.CouldWalkThroughCell(cell);
+    }
+
+    public bool IsInRange(Vector2Int cell)
+    {
+        return _range.Contains(cell);
+    }
+
+    public bool IsReachable(Vector2Int cell)
+    {
+        return _range.IsReachable(cell);
+    }
+
+    public bool IsStayable(Vector2Int cell)
+    {
+        return _range.IsStayable(cell);
+    }
+
+    // ── Grid Search ──────────────────────────────────────────────────────
+
+    public GridSearchResult SearchGrid(GridSearchStrategy strategy)
+    {
+        return _gridSearch.Search(strategy);
+    }
+
+    // ── Walker ───────────────────────────────────────────────────────────
+
+    public Coroutine WalkToNodeClamped(Node node)
+    {
+        return _walker.WalkToNodeClamped(node);
+    }
+
+    // ── Move Preview ─────────────────────────────────────────────────────
+
+    public void PreviewInteraction(Character other)
+    {
+        _preview.PreviewMove(other);
+        _range.ShowNearInvisibleRange();
+    }
+
+    public void ClearInteractionPreview()
+    {
+        _preview.Clear();
+        _range.ShowOpaqueRange();
+    }
+
+    public InteractionResult PredictInteractionResult(Character other)
+    {
+        return _preview.PredictInteractionResult(other);
+    }
+
+    // ── Attack Behaviour ─────────────────────────────────────────────────
+
+    public IEnumerator GetMeleeSwipeSequence(Character other)
+    {
+        return _attackBehaviour.GetMeleeSwipeSequence(other);
+    }
+
+    // ── Hurt Behaviour ───────────────────────────────────────────────────
+
+    public YieldInstruction PlayAttackConnectShake()
+    {
+        return _hurtBehaviour.PlayAttackConnectShake();
+    }
+
+    public IEnumerator GetHurtSequence(Character attacker)
+    {
+        return _hurtBehaviour.GetHurtSequence(attacker);
+    }
+
+    // ── Undo Redo Behaviour ──────────────────────────────────────────────
+
+    public IEnumerator GetApplyStateSequence(CharacterState state)
+    {
+        return _undoRedoBehaviour.GetApplyStateSequence(state);
+    }
+
+    // -- Speech -------------------------------------------------------
+
+    public Coroutine Say(string text)
+    {
+        return _speech.Say(text);
+    }
+
+    // -- Footfall Audio -------------------------------------------------------
+
+    public void SetFootstepsAudible(bool audible)
+    {
+        _footfallAudio.enabled = audible;
+    }
+
+    // ── Battle ───────────────────────────────────────────────────────────
+
+    public Vector2 CellToWorld(Vector2Int cell)
+    {
+        return _battle.CellToWorld(cell);
+    }
+
+    public Vector2Int WorldToCell(Vector2 position)
+    {
+        return _battle.WorldToCell(position);
+    }
+
+    public Character GetOccupant(Vector2Int cell)
+    {
+        return _battle.GetOccupant(cell);
+    }
+
+    public void RefreshCell()
+    {
+        _battle.RefreshCell(this);
+    }
+
+    public TileBase GetTile(Vector2Int cell)
+    {
+        return _battle.GetTile(cell);
+    }
+
+    public void RecordMoveWith(Character other)
+    {
+        _battle.Record(this, other);
+    }
+
+    public void RecordMove()
+    {
+        _battle.Record(this);
+    }
+
+    public CharacterState GetLastRecordedState()
+    {
+        return _battle.GetLastRecordedState(this).State;
+    }
+
+    public Vector2 WorldToScreen(Vector2 worldPosition)
+    {
+        return _battle.WorldToScreen(worldPosition);
+    }
+}

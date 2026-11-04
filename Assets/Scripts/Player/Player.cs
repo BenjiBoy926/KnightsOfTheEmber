@@ -1,0 +1,428 @@
+using Hellmade.Sound;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent(typeof(PlayerActionTimer))]
+[RequireComponent(typeof(RangeWarningSystem))]
+public class Player : MonoBehaviour
+{
+    public Character ActiveCharacter => _activeCharacter;
+    public Faction Faction => _faction;
+    public Transform CommanderTransform => _faction.CommanderTransform;
+    public Vector3 CommanderPosition => _faction.CommanderPosition;
+    public bool IsInputAllowed => _isInputAllowed;
+    public HashSet<Character> AllCharacters => _battle.AllCharacters;
+    public Vector2 CursorPosition => _cursor.Position;
+
+    [SerializeField] private Faction _faction;
+    [SerializeField] private AudioSource _cellHoverAudio;
+    [SerializeField] private AudioClip _moveStartClip;
+    [SerializeField] private CharacterDetailPanel _detailPanel;
+    [SerializeField] private CharacterDetailPanel _previewDetailPanel;
+
+    private Battle _battle;
+    private PlayerCursor _cursor;
+    private PlayerGridReticle _gridReticle;
+    private PlayerActionTimer _actionTimer;
+    private RangeWarningSystem _rangeWarning;
+    private Character _activeCharacter;
+    private Character _hoveredCharacter;
+    private ActionDirectionIndicator _actionDirectionIndicator;
+    private Vector2Int _currentCell;
+    private bool _isInputAllowed = false;
+
+    private void Awake()
+    {
+        _battle = GetComponentInParent<Battle>();
+        _cursor = GetComponentInChildren<PlayerCursor>();
+        _gridReticle = GetComponentInChildren<PlayerGridReticle>();
+        _actionTimer = GetComponent<PlayerActionTimer>();
+        _rangeWarning = GetComponent<RangeWarningSystem>();
+        _actionDirectionIndicator = GetComponentInChildren<ActionDirectionIndicator>(true);
+    }
+
+    private void Start()
+    {
+        _detailPanel.HideImmediately();
+        _previewDetailPanel.HideImmediately();
+    }
+
+    private void Update()
+    {
+        RefreshIsInputAllowed();
+    }
+
+    public void ShowCursor()
+    {
+        _cursor.Show();
+    }
+
+    public void HideGridReticle()
+    {
+        _gridReticle.gameObject.SetActive(false);
+    }
+
+    public void BeginEndTurn()
+    {
+        _actionTimer.BeginEndTurn();
+    }
+
+    public void CancelEndTurn()
+    {
+        _actionTimer.CancelEndTurn();
+    }
+
+    public void BeginUndo()
+    {
+        _actionTimer.BeginUndo();
+    }
+
+    public void CancelUndo()
+    {
+        _actionTimer.CancelUndo();
+    }
+
+    public void BeginRedo()
+    {
+        _actionTimer.BeginRedo();
+    }
+
+    public void CancelRedo()
+    {
+        _actionTimer.CancelRedo();
+    }
+
+    public void IncludeInView()
+    {
+        _battle.IncludeInView(_cursor.Position);
+    }
+
+    public void ChangeZoom(float zoom)
+    {
+        _battle.ChangeZoom(zoom);
+    }
+
+    public void ZoomIn()
+    {
+        _battle.ZoomIn();
+    }
+
+    public void ZoomOut()
+    {
+        _battle.ZoomOut();
+    }
+
+    public void SlidePosition(Vector2 offset)
+    {
+        Vector2 Position = _cursor.Position;
+        SetPosition(Position + offset);
+    }
+
+    public void SetScreenPosition(Vector2 screenPosition)
+    {
+        if (_battle.IsCameraGrabbed)
+        {
+            _battle.UpdateCameraGrab(screenPosition);
+        }
+        else
+        {
+            Vector2 worldPosition = _battle.ScreenToWorld(screenPosition);
+            SetPosition(worldPosition);
+        }
+    }
+
+    public void SetPosition(Vector2 newPosition)
+    {
+        newPosition = _battle.ClampToField(newPosition);
+        SetActiveCharacterPosition(newPosition);
+        SetCursorPosition(newPosition);
+        RefreshCurrentCell();
+        CancelEndTurn();
+    }
+
+    public void Grab()
+    {
+        Character characterAtCursor = GetCharacterAtCurrentCell();
+        if (characterAtCursor)
+        {
+            StartMove();
+        }
+        else
+        {
+            _battle.GrabCamera(_cursor.Position);
+        }
+    }
+
+    public void Release()
+    {
+        if (_activeCharacter)
+        {
+            FinishMove();
+        }
+        else
+        {
+            _battle.ReleaseCamera();
+        }
+    }
+
+    public void StartMove()
+    {
+        Character characterAtCursor = GetCharacterAtCurrentCell();
+        if (CanMoveCharacter(characterAtCursor))
+        {
+            SetActiveCharacter(characterAtCursor);
+            EazySoundManager.PlaySound(_moveStartClip);
+        }
+    }
+
+    public void FinishMove()
+    {
+        if (!_activeCharacter) 
+            return;
+
+        bool shouldConfirm = _activeCharacter.CouldStayInCell(_activeCharacter.CurrentCell);
+        if (shouldConfirm)
+        {
+            ConfirmMove();
+        }
+        else
+        {
+            CancelMove();
+        }
+    }
+
+    private void ConfirmMove()
+    {
+        if (!_activeCharacter)
+            return;
+
+        Character target = GetCharacterAtCurrentCell();
+        if (!target || target == _activeCharacter)
+        {
+            _activeCharacter.Defend();
+        }
+        else if (target.Faction == _activeCharacter.Faction)
+        {
+            _activeCharacter.Heal(target);
+        }
+        else
+        {
+            _activeCharacter.Attack(target);
+        }
+        Deselect();
+    }
+
+    public void CancelMove()
+    {
+        if (!_activeCharacter)
+            return;
+
+        _activeCharacter.Cancel();
+        Deselect();
+    }
+
+    private void Deselect()
+    {
+        ClearPreview();
+        SetHoveredCharacter(null);
+        SetActiveCharacter(null);
+    }
+
+    private void SetCursorPosition(Vector2 newPosition)
+    {
+        if (_activeCharacter)
+        {
+            newPosition = _activeCharacter.ClampToReachableCells(newPosition);
+        }
+        _cursor.Position = newPosition;
+    }
+
+    private void SetActiveCharacterPosition(Vector2 newPosition)
+    {
+        if (!_activeCharacter)
+            return;
+
+        _activeCharacter.LookAt(newPosition);
+        _activeCharacter.Position = _activeCharacter.ClampToStayableCells(newPosition);
+        _activeCharacter.RefreshCell();
+    }
+
+    private void SetHoveredCharacter(Character hoveredCharacter)
+    {
+        if (hoveredCharacter == _hoveredCharacter) return;
+        if (_hoveredCharacter)
+        {
+            _hoveredCharacter.HideRange();
+        }
+        _hoveredCharacter = hoveredCharacter;
+        if (_hoveredCharacter)
+        {
+            _hoveredCharacter.RefreshRange();
+            _hoveredCharacter.ShowTransparentRange();
+        }
+        RefreshWarningSystem();
+        RefreshDetailPanel();
+    }
+
+    private void SetActiveCharacter(Character activeCharacter)
+    {
+        if (activeCharacter == _activeCharacter) return;
+        if (_activeCharacter)
+        {
+            _activeCharacter.HideRange();
+        }        
+        _activeCharacter = activeCharacter;
+        _cursor.SetSelectionTarget(_activeCharacter ? _activeCharacter.transform : null);
+        _actionDirectionIndicator.SetTargeter(_activeCharacter);
+        RefreshWarningSystem();
+        RefreshDetailPanel();
+        if (_activeCharacter)
+        {
+            SetHoveredCharacter(null);
+            _activeCharacter.Position = _cursor.Position;
+            _activeCharacter.SetIsRunning(true);
+            _activeCharacter.ShowOpaqueRange();
+        }
+    }
+
+    private void RefreshWarningSystem()
+    {
+        if (ShouldShowRangeWarnings(_hoveredCharacter))
+        {
+            _rangeWarning.SetTarget(_hoveredCharacter);
+        }
+        else if (ShouldShowRangeWarnings(_activeCharacter))
+        {
+            _rangeWarning.SetTarget(_activeCharacter);
+        }
+        else
+        {
+            _rangeWarning.SetTarget(null);
+        }
+    }
+
+    private bool ShouldShowRangeWarnings(Character character)
+    {
+        return character && character.Faction == _faction;
+    }
+
+    private void RefreshDetailPanel()
+    {
+        if (_activeCharacter)
+        {
+            _detailPanel.Populate(_activeCharacter);
+            _detailPanel.Show();
+        }
+        else if (_hoveredCharacter)
+        {
+            _detailPanel.Populate(_hoveredCharacter);
+            _detailPanel.Show();
+        }
+    }
+
+    public Character GetCharacterAtCurrentCell()
+    {
+        return _battle.GetOccupant(_currentCell);
+    }
+
+    private void RefreshCurrentCell()
+    {
+        Vector2Int cell = _battle.WorldToCell(_cursor.Position);
+        SetCurrentCell(cell);
+    }
+
+    private void SetCurrentCell(Vector2Int cell)
+    {
+        if (_currentCell == cell) return;
+
+        _currentCell = cell;
+
+        Vector2 worldPosition = _battle.CellToWorld(_currentCell);
+        _gridReticle.MoveToPosition(worldPosition);
+        _actionDirectionIndicator.SetTarget(GetCharacterAtCurrentCell());
+        if (_isInputAllowed)
+        {
+            _cellHoverAudio.Play();
+        }
+        RefreshHoveredCharacter();
+        RefreshMovePreview();
+    }
+
+    private void RefreshHoveredCharacter()
+    {
+        if (!_activeCharacter && _isInputAllowed)
+        {
+            SetHoveredCharacter(GetCharacterAtCurrentCell());
+        }
+    }
+
+    private void RefreshMovePreview()
+    {
+        if (!_activeCharacter) 
+            return;
+
+        Character characterAtCell = GetCharacterAtCurrentCell();
+        if (characterAtCell && characterAtCell != _activeCharacter)
+        {
+            _activeCharacter.PreviewInteraction(characterAtCell);
+
+            InteractionResult result = _activeCharacter.PredictInteractionResult(characterAtCell);
+            _detailPanel.Preview(result.Interactor);
+            _previewDetailPanel.Populate(characterAtCell);
+            _previewDetailPanel.Preview(result.Target);
+            _previewDetailPanel.Show();
+        }
+        else
+        {
+            ClearPreview();
+        }
+    }
+
+    private void ClearPreview()
+    {
+        if (_activeCharacter)
+        {
+            _activeCharacter.ClearInteractionPreview();
+        }
+        _detailPanel.ClearPreview();
+        _previewDetailPanel.Hide();
+    }
+
+    private bool CanMoveCharacter(Character character)
+    {
+        return character && character.IsAbleToMove && character.Faction == _faction;
+    }
+
+    private void RefreshIsInputAllowed()
+    {
+        SetIsInputAllowed(ShouldInputBeAllowed());
+    }
+
+    private bool ShouldInputBeAllowed()
+    {
+        return _battle.IsInProgress && 
+            !_battle.IsTurnChangeAnimationPlaying && 
+            !Character.IsAnyCharacterActing && 
+            !BattleHistory.IsAnySequencePlaying && 
+            _battle.CurrentFactionTurn == _faction &&
+            !_battle.IsDialoguePlaying;
+    }
+
+    private void SetIsInputAllowed(bool isInputAllowed)
+    {
+        if (isInputAllowed == _isInputAllowed) return;
+
+        _isInputAllowed = isInputAllowed;
+        if (isInputAllowed)
+        {
+            _cursor.Show();
+            RefreshHoveredCharacter();
+        }
+        else
+        {
+            _cursor.Hide();
+            _detailPanel.Hide();
+            Deselect();
+        }
+    }
+}

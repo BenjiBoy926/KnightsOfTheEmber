@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags: []
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Environment
+    uniqueID: 82241977
+    locked: 0
+  - name: RangeHighlight
+    uniqueID: 2581706581
+    locked: 0
+  - name: GridReticle
+    uniqueID: 2224523165
+    locked: 0
+  - name: UI
+    uniqueID: 1409985309
+    locked: 0
+  - name: ActionDirectionIndicator
+    uniqueID: 2817226921
+    locked: 0
+  - name: RangeWarning
+    uniqueID: 2756914117
+    locked: 0
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Cursor
+    uniqueID: 430816021
+    locked: 0
+  - name: UIPreview
+    uniqueID: 4129969483
+    locked: 0
+  - name: Dialogue
+    uniqueID: 3997996457
+    locked: 0

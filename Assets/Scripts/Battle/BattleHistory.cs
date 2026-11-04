@@ -1,0 +1,213 @@
+using Hellmade.Sound;
+using NaughtyAttributes;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent(typeof(Battle))]
+public class BattleHistory : MonoBehaviour
+{
+    public int LatestStateIndex => _states.Count - 1;
+    public int CurrentStateIndex => _currentStateIndex;
+    public int StateCount => _states.Count;
+    public static bool IsAnySequencePlaying => _playingHistories.Count > 0;
+
+    [SerializeField] private AudioClip _undoSound;
+    [SerializeField] private AudioClip _redoSound;
+    [SerializeField, ReadOnly] private List<BattleState> _states = new();
+    [SerializeField, ReadOnly] private int _currentStateIndex = 0;
+    private Battle _battle;
+    private Overlay _overlay;
+    private static readonly HashSet<BattleHistory> _playingHistories = new();
+    private static readonly List<Coroutine> _undoRedoRoutines = new();
+
+    private void Awake()
+    {
+        _battle = GetComponent<Battle>();
+        _overlay = GetComponentInChildren<Overlay>();
+    }
+
+    public void RecordInitialState()
+    {
+        RecordTurnChange(_battle.AllCharacters, _battle.PlayerFaction);
+        _currentStateIndex = 0;
+    }
+
+    public void RecordTurnChange(HashSet<Character> characters, Faction faction)
+    {
+        BattleState state = new BattleState_TurnChange();
+        state.SetCurrentTurn(faction);
+        foreach (Character character in characters)
+        {
+            if (character.IsInBattle)
+            {
+                state.AddRecord(character);
+            }
+        }
+        InsertState(state);
+    }
+
+    public void Record(Character a, Character b)
+    {
+        BattleState state = new();
+        state.SetCurrentTurn(_battle.CurrentFactionTurn);
+        state.AddRecord(a);
+        state.AddRecord(b);
+        InsertState(state);
+    }
+
+    public void Record(Character character)
+    {
+        BattleState state = new();
+        state.SetCurrentTurn(_battle.CurrentFactionTurn);
+        state.AddRecord(character);
+        InsertState(state);
+    }
+
+    public Coroutine Undo()
+    {
+        StopAllCoroutines();
+        return IsUndoAvailable() ? StartCoroutine(UndoToLastPlayerMovePoint()) : null;
+    }
+
+    public bool IsUndoAvailable()
+    {
+        return _currentStateIndex > 0;
+    }
+
+    public Coroutine Redo()
+    {
+        StopAllCoroutines();
+        return IsRedoAvailable() ? StartCoroutine(RedoToLastPlayerMovePoint()) : null;
+    }
+
+    public bool IsRedoAvailable()
+    {
+        return _currentStateIndex < LatestStateIndex;
+    }
+
+    private IEnumerator UndoToLastPlayerMovePoint()
+    {
+        yield return SequenceStart();
+
+        do
+        {
+            _currentStateIndex--;
+            yield return UndoOnceSequence();
+        }
+        while (!CanPlayerMove() && _currentStateIndex > 0);
+
+        yield return SequenceEnd();
+    }
+
+    private IEnumerator RedoToLastPlayerMovePoint()
+    {
+        yield return SequenceStart();
+
+        do
+        {
+            _currentStateIndex++;
+            yield return RedoOnceSequence();
+        }
+        while (!CanPlayerMove() && _currentStateIndex < LatestStateIndex);
+
+        yield return SequenceEnd();
+    }
+
+    private IEnumerator UndoOnceSequence()
+    {
+        EazySoundManager.PlayUISound(_undoSound);
+
+        int previousStateIndex = _currentStateIndex + 1;
+        BattleState previousState = _states[previousStateIndex];
+        
+        _undoRedoRoutines.Clear();
+        for (int i = 0; i < previousState.RecordCount; i++)
+        {
+            CharacterRecord recordToUndo = previousState.GetRecord(i);
+            CharacterRecord olderRecord = GetLastRecordedState(recordToUndo.Character);
+            Coroutine undoRoutine = StartCoroutine(olderRecord.GetApplySequence());
+            _undoRedoRoutines.Add(undoRoutine);
+        }
+        foreach (var routine in _undoRedoRoutines)
+        {
+            yield return routine;
+        }
+
+        SetCurrentTurn();
+    }
+
+    private IEnumerator RedoOnceSequence()
+    {
+        EazySoundManager.PlayUISound(_redoSound);
+
+        BattleState currentState = _states[_currentStateIndex];
+
+        _undoRedoRoutines.Clear();
+        foreach (var applySequence in currentState.GetAllApplySequences())
+        {
+            Coroutine routine = StartCoroutine(applySequence);
+            _undoRedoRoutines.Add(routine);
+        }
+        foreach (var routine in _undoRedoRoutines)
+        {
+            yield return routine;
+        }
+
+        SetCurrentTurn();
+    }
+
+    private bool CanPlayerMove()
+    {
+        return _battle.CurrentFactionTurn == _battle.PlayerFaction && _battle.CountMoveableCharacters(_battle.PlayerFaction) > 0;
+    }
+
+    private IEnumerator SequenceStart()
+    {
+        _playingHistories.Add(this);
+        yield return _overlay.FadeIn();
+    }
+
+    private IEnumerator SequenceEnd()
+    {
+        yield return _overlay.FadeOut();
+        yield return _battle.GetUndoRedoEndDialogue();
+        _playingHistories.Remove(this);
+    }   
+
+    private void SetCurrentTurn()
+    {
+        BattleState state = _states[_currentStateIndex];
+        _battle.StartTurn(state.CurrentTurn);
+    }
+
+    private void InsertState(BattleState state)
+    {
+        if (_currentStateIndex < LatestStateIndex)
+        {
+            _states.RemoveRange(_currentStateIndex + 1, LatestStateIndex - _currentStateIndex);
+        }
+        _states.Add(state);
+        _currentStateIndex++;
+    }
+
+    public BattleState GetState(int i)
+    {
+        return i >= 0 && i < _states.Count ? _states[i] : null;
+    }
+
+    public CharacterRecord GetLastRecordedState(Character character)
+    {
+        for (int i = _currentStateIndex; i >= 0; i--)
+        {
+            BattleState state = _states[i];
+            if (state.TryGetRecord(character, out var record))
+            {
+                return record;
+            }
+        }
+        throw new System.Exception($"Expected to find a record for {character} at or before index {_currentStateIndex}, " +
+            $"but no such record could be found. Are you sure that the initial state of the character was recorded " +
+            $"when they first entered the battle?");
+    }
+}

@@ -1,0 +1,140 @@
+using DG.Tweening;
+using Hellmade.Sound;
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(Character))]
+public class CharacterAttackBehaviour : MonoBehaviour
+{
+    private const float ApproxFrameDuration = .1f;
+    private const int MeleeFrames = 2;
+    private const int RangedFrames = 3;
+
+    [SerializeField] private Ease _chargeEase = Ease.InBack;
+    [SerializeField] private float _chargeAloneOffset = .49f;
+    [SerializeField] private float _chargeClashOffset = 0.3f;
+
+    [Space]
+    [SerializeField] private AudioClip _windUpClip;
+    [SerializeField] private AudioClip _attackConnectClip;
+    [SerializeField] private AudioClip _hurtClip;
+
+    private Character _character;
+    private ArrowBlur _arrowBlur;
+    private bool _isAttackInitiator = false;
+
+    private void Awake()
+    {
+        _character = GetComponent<Character>();
+        _arrowBlur = GetComponentInChildren<ArrowBlur>();
+    }
+
+    public IEnumerator GetSequence(Character other)
+    {
+        return _character.IsRanged || other.IsRanged ?
+            GetAttackAloneSequence(other) :
+            GetAttackExchangeSequence(other);
+    }
+    
+    private IEnumerator GetAttackAloneSequence(Character other)
+    {
+        _isAttackInitiator = true;
+        yield return _character.BeginMoveSequence(other);
+        yield return GetMeleeSwipeSequence(other);
+
+        EazySoundManager.PlaySound(_hurtClip);
+        _character.MoveToCellCenter();
+        Coroutine otherHurtRoutine = StartCoroutine(other.GetHurtSequence(_character));
+        while (_character.IsOneShotAnimationPlaying)
+        {
+            yield return null;
+        }
+
+        _character.PlayIdleAnimation();
+        yield return otherHurtRoutine;
+
+        _isAttackInitiator = false;
+        yield return _character.EndMoveSequence(other);
+        RemoveDeadCombatantsFromBattlefield(other);
+    }
+
+    private IEnumerator GetAttackExchangeSequence(Character other)
+    {
+        _isAttackInitiator = true;
+        yield return _character.BeginMoveSequence(other);
+
+        IEnumerator otherSwipeSequence = other.GetMeleeSwipeSequence(_character);
+        Coroutine otherSwipeRoutine = StartCoroutine(otherSwipeSequence);
+        yield return GetMeleeSwipeSequence(other);
+        yield return otherSwipeRoutine;
+
+        IEnumerator otherHurtSequence = other.GetHurtSequence(_character);
+        Coroutine otherHurtRoutine = StartCoroutine(otherHurtSequence);
+        yield return GetHurtSequence(other);
+        yield return otherHurtRoutine;
+
+        _isAttackInitiator = false;
+        yield return _character.EndMoveSequence(other);
+        RemoveDeadCombatantsFromBattlefield(other);
+    }
+
+    public IEnumerator GetMeleeSwipeSequence(Character other)
+    {
+        _character.PlayAttackAnimation();
+        yield return ChargeSequence(other);
+        if (_character.IsRanged)
+        {
+            _arrowBlur.Play(other);
+        }
+        yield return AttackConnectSequence(other);
+    }
+
+    private YieldInstruction ChargeSequence(Character other)
+    {
+        Vector2 cellPosition = _character.CurrentCellCenter;
+        Vector2 towardsTarget = (other.Position - cellPosition).normalized;
+        float chargeMagnitude = _character.IsRanged || other.IsRanged ? _chargeAloneOffset : _chargeClashOffset;
+        float chargeDirection = _character.IsRanged ? -1 : 1;
+        Vector2 chargeOffset = chargeDirection * chargeMagnitude * _character.CellSize * towardsTarget;
+        Vector2 chargePosition = cellPosition + chargeOffset;
+
+        if (_isAttackInitiator)
+        {
+            EazySoundManager.PlaySound(_windUpClip);
+        }
+        int frameCount = _character.IsRanged ? RangedFrames : MeleeFrames;
+        float totalChargeDuration = frameCount * ApproxFrameDuration;
+        return transform.DOMove(chargePosition, totalChargeDuration)
+            .SetEase(_chargeEase)
+            .WaitForCompletion();
+    }
+
+    private IEnumerator AttackConnectSequence(Character other)
+    {
+        if (_isAttackInitiator)
+        {
+            EazySoundManager.PlaySound(_attackConnectClip);
+        }
+        _character.SetAnimationSpeed(0);
+        yield return other.PlayAttackConnectShake();
+        _character.SetAnimationSpeed(1);
+    }
+
+    private IEnumerator GetHurtSequence(Character other)
+    {
+        EazySoundManager.PlaySound(_hurtClip);
+        return _character.GetHurtSequence(other);
+    }
+
+    private void RemoveDeadCombatantsFromBattlefield(Character other)
+    {
+        if (other.ShouldRemoveFromBattlefield())
+        {
+            other.gameObject.SetActive(false);
+        }
+        if (_character.ShouldRemoveFromBattlefield())
+        {
+            _character.gameObject.SetActive(false);
+        }
+    }
+}
