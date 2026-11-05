@@ -3,6 +3,11 @@ using UnityEngine.InputSystem;
 
 public class DebugCommands : MonoBehaviour
 {
+    private void Awake()
+    {
+        enabled = Debug.isDebugBuild;
+    }
+
     private void Update()
     {
         if (Keyboard.current.pKey.wasPressedThisFrame)

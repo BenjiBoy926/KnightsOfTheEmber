@@ -46,7 +46,7 @@ namespace VerticalSlice
 
         private IEnumerator Start()
         {
-            if (_skip)
+            if (_skip && Application.isEditor)
             {
                 _battle.Begin();
                 yield break;
