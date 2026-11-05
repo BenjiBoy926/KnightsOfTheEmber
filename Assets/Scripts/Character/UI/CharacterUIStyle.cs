@@ -17,6 +17,8 @@ public class CharacterUIStyle : ScriptableObject
     [SerializeField] private Color _healthLowColor = Color.red;
 
     [Space]
+    [SerializeField] private Sprite _meleeSprite;
+    [SerializeField] private Sprite _rangedSprite;
     [SerializeField] private Color _powerHighColor = Color.green;
     [SerializeField] private Color _powerNormalColor = Color.white;
     [SerializeField] private Color _powerLowColor = Color.red;
@@ -58,6 +60,11 @@ public class CharacterUIStyle : ScriptableObject
         {
             return _healthLowColor;
         }
+    }
+
+    public Sprite GetPowerIcon(bool isRanged)
+    {
+        return isRanged ? _rangedSprite : _meleeSprite;
     }
 
     public Color GetPowerColor(int currentPower, int basePower)

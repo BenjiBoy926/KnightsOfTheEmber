@@ -10,6 +10,7 @@ public class CharacterDetailPanel : MonoBehaviour
     [SerializeField] private Image _iconImage;
     [SerializeField] private Image _healthImage;
     [SerializeField] private TMP_Text _healthLabel;
+    [SerializeField] private Image _powerImage;
     [SerializeField] private TMP_Text _powerLabel;
     [SerializeField] private TMP_Text _energyLabel;
 
@@ -93,6 +94,7 @@ public class CharacterDetailPanel : MonoBehaviour
 
             ShowHealth(_target.CurrentHealth);
 
+            _powerImage.sprite = _target.GetPowerIcon();
             _powerLabel.text = _target.CurrentPower.ToString();
             _powerLabel.color = _target.GetPowerColor(_target.CurrentPower);
 

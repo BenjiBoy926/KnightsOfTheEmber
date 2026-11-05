@@ -516,6 +516,7 @@ MonoBehaviour:
   _iconImage: {fileID: 3717031402152553612}
   _healthImage: {fileID: 6823104753173628746}
   _healthLabel: {fileID: 4643435776080181943}
+  _powerImage: {fileID: 5383357457179522514}
   _powerLabel: {fileID: 3017941026632438825}
   _energyLabel: {fileID: 1768832492087357573}
   _previewFadeDuration: 0.35

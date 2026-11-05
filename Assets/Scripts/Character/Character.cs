@@ -402,6 +402,11 @@ public class Character : MonoBehaviour
         return _uiStyle.GetHealthColor(currentHealth, BaseHealth);
     }
 
+    public Sprite GetPowerIcon()
+    {
+        return _uiStyle.GetPowerIcon(_isRanged);
+    }
+
     public Color GetPowerColor(int currentPower)
     {
         // NOTE: don't actually distinguish current and base power yet because
