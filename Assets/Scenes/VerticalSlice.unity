@@ -501,12 +501,12 @@ MonoBehaviour:
   _skip: 0
   _ambience: {fileID: 8300000, guid: 57a80abc914264b4d8513199b0d6e0ca, type: 3}
   _ambienceVolume: 0.2
-  _waitBeforeFootstepStart: 2
+  _waitBeforeFootstepStart: 1
   _footstepStagger: 0.1
   _waitBeforeTalkingStarts: 1
   _alfredPause: 1
   _globalLight: {fileID: 2438059299920477467}
-  _footstepStopDelay: 2
+  _footstepStopDelay: 1
   _initialEmberRevealDelay: 1
   _emberPulseDuration: 2
   _emberPulseAudio: {fileID: 8300000, guid: a1c5dd8321776ab47a74829ffc83d798, type: 3}

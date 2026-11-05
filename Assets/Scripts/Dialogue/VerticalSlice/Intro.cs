@@ -94,11 +94,8 @@ namespace VerticalSlice
 
         private IEnumerator SoundFadeInSequence()
         {
-            int ambienceID = EazySoundManager.PlaySound(_ambience, 1, true, null);
+            EazySoundManager.PlaySound(_ambience, _ambienceVolume, true, null);
             yield return new WaitForSeconds(_waitBeforeFootstepStart);
-            Audio ambience = EazySoundManager.GetAudio(ambienceID);
-            ambience.SetVolume(_ambienceVolume);
-
             Hayden.SetIsRunning(true);
             yield return new WaitForSeconds(_footstepStagger);
             Gregory.SetIsRunning(true);
