@@ -12,7 +12,6 @@ public class CharacterDetailPanel : MonoBehaviour
     [SerializeField] private TMP_Text _healthLabel;
     [SerializeField] private TMP_Text _powerLabel;
     [SerializeField] private TMP_Text _energyLabel;
-    [SerializeField] private TMP_Text _rangeLabel;
 
     [Space]
     [SerializeField] private float _previewFadeDuration = .35f;
@@ -98,8 +97,6 @@ public class CharacterDetailPanel : MonoBehaviour
             _powerLabel.color = _target.GetPowerColor(_target.CurrentPower);
 
             ShowEnergy(_target.CurrentEnergy);
-
-            _rangeLabel.text = _target.TraversalRange.ToString();
         }
         else
         {
