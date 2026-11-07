@@ -2507,6 +2507,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerTurn: {fileID: 7919014680834639915}
   _enemyTurn: {fileID: 1058725971615380619}
+  _muteThisBattle: 1
 --- !u!4 &7365386443031279769
 Transform:
   m_ObjectHideFlags: 0

@@ -14,6 +14,9 @@ public class Music : MonoBehaviour
 
     public void Play()
     {
+        if (BattleMusic.Mute)
+            return;
+
         if (_intro)
         {
             _introAudio = FadeIn(_intro, false);
@@ -27,7 +30,7 @@ public class Music : MonoBehaviour
 
     private void Update()
     {
-        if (!_isPlaying)
+        if (!_isPlaying || BattleMusic.Mute)
             return;
 
         if (ShouldTransitionToLoop())

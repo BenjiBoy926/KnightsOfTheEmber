@@ -94,7 +94,10 @@ namespace VerticalSlice
 
         private IEnumerator SoundFadeInSequence()
         {
-            EazySoundManager.PlaySound(_ambience, _ambienceVolume, true, null);
+            if (!BattleMusic.Mute)
+            {
+                EazySoundManager.PlaySound(_ambience, _ambienceVolume, true, null);
+            }
             yield return new WaitForSeconds(_waitBeforeFootstepStart);
             Hayden.SetIsRunning(true);
             yield return new WaitForSeconds(_footstepStagger);
