@@ -355,6 +355,17 @@ public partial class @DefaultActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""a4406c07-c12d-4a74-86d6-28fa780d8ef2"",
+                    ""path"": ""<Touchscreen>/touch1/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Cancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""1e737633-20fa-44cb-ac25-ebc6c04504dc"",
                     ""path"": ""<Pointer>/press"",
                     ""interactions"": """",
