@@ -183,8 +183,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _viewMargin: 0.5
-  _viewSizeRange: {x: 2, y: 10}
-  _zoomJump: 0.15
+  _viewSizeRange: {x: 3.5, y: 5.5}
+  _zoomJump: 1
   _zoomJumpDuration: 0.35
   _zoomJumpEase: 15
 --- !u!114 &5179970857030055801

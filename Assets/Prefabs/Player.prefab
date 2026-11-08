@@ -1304,7 +1304,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 5
   _fasterSpeed: 15
-  _zoomChangeSpeed: 1
+  _zoomChangeSpeed: 2
 --- !u!114 &7245667630192242835
 MonoBehaviour:
   m_ObjectHideFlags: 0
