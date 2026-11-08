@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(Battle))]
 public class BattleMusic : MonoBehaviour
 {
-    public static bool Mute { get; private set; } = false;
+    public static bool IsMuted { get; private set; } = false;
 
     [SerializeField] private Music _playerTurn;
     [SerializeField] private Music _enemyTurn;
@@ -14,7 +14,7 @@ public class BattleMusic : MonoBehaviour
     private void Awake()
     {
         _battle = GetComponent<Battle>();
-        Mute = _muteThisBattle && Application.isEditor;
+        IsMuted = _muteThisBattle && Application.isEditor;
     }
 
     private void Update()

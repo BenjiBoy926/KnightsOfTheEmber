@@ -94,7 +94,7 @@ namespace VerticalSlice
 
         private IEnumerator SoundFadeInSequence()
         {
-            if (!BattleMusic.Mute)
+            if (!BattleMusic.IsMuted)
             {
                 EazySoundManager.PlaySound(_ambience, _ambienceVolume, true, null);
             }

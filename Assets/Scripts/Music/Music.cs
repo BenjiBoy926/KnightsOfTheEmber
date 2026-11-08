@@ -14,7 +14,7 @@ public class Music : MonoBehaviour
 
     public void Play()
     {
-        if (BattleMusic.Mute)
+        if (BattleMusic.IsMuted)
             return;
 
         if (_intro)
@@ -30,7 +30,7 @@ public class Music : MonoBehaviour
 
     private void Update()
     {
-        if (!_isPlaying || BattleMusic.Mute)
+        if (!_isPlaying || BattleMusic.IsMuted)
             return;
 
         if (ShouldTransitionToLoop())
