@@ -168,7 +168,9 @@ public class BattleCamera : MonoBehaviour
 
     private Vector2 GetShoveDirection(Rect rect, Vector2 point)
     {
-        return new(GetShoveDirection(rect, point, 0), GetShoveDirection(rect, point, 1));
+        float x = GetShoveDirection(rect, point, 0);
+        float y = GetShoveDirection(rect, point, 1);
+        return new Vector2(x, y).normalized;
     }
 
     private float GetShoveDirection(Rect rect, Vector2 point, int dimension)

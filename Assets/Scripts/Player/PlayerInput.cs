@@ -66,7 +66,7 @@ public class PlayerInput : MonoBehaviour, DefaultActions.IPlayerActions
         }
         else
         {
-            _player.CameraVelocity = velocity;
+            _player.CameraPosition += offsetThisFrame;
         }
     }
 
