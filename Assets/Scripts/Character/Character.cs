@@ -543,9 +543,9 @@ public class Character : MonoBehaviour
 
     // ── Attack Behaviour ─────────────────────────────────────────────────
 
-    public IEnumerator GetMeleeSwipeSequence(Character other)
+    public IEnumerator GetAttackAloneSequence(Character other)
     {
-        return _attackBehaviour.GetMeleeSwipeSequence(other);
+        return _attackBehaviour.GetAttackAloneSequence(other);
     }
 
     // ── Hurt Behaviour ───────────────────────────────────────────────────

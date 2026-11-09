@@ -34,13 +34,13 @@ public class CharacterAttackBehaviour : MonoBehaviour
         yield return GetAttackAloneSequence(other);
         if (!other.IsRanged && !other.IsDead)
         {
-            // other attacks
+            yield return other.GetAttackAloneSequence(_character);
         }
         yield return _character.EndMoveSequence(other);
         RemoveDeadCombatantsFromBattlefield(other);
     }
     
-    private IEnumerator GetAttackAloneSequence(Character other)
+    public IEnumerator GetAttackAloneSequence(Character other)
     {
         yield return GetMeleeSwipeSequence(other);
 
