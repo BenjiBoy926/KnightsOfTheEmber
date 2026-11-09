@@ -33,12 +33,6 @@ public class BattleCamera : MonoBehaviour
     }
 
     [SerializeField] private float _viewMargin = 1;
-    [SerializeField] private Vector2 _viewSizeRange = new(5, 15);
-
-    [Space]
-    [SerializeField] private float _zoomJump = 0.3f;
-    [SerializeField] private float _zoomJumpDuration = 0.35f;
-    [SerializeField] private Ease _zoomJumpEase = Ease.OutQuint;
 
     private Camera _camera;
     private Rigidbody2D _rigidbody;
@@ -46,7 +40,6 @@ public class BattleCamera : MonoBehaviour
     private BattleCameraFollow _follow;
     private BattleCameraGlide _glide;
     private BattleCameraZoom _zoom;
-    private Tween _zoomJumpTween;
 
     private void Awake()
     {
