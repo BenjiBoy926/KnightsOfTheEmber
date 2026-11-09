@@ -31,7 +31,7 @@ public class CharacterAttackBehaviour : MonoBehaviour
     {
         yield return _character.BeginMoveSequence(other);
         yield return GetAttackAloneSequence(other);
-        if (!other.IsRanged && !other.IsDead)
+        if (InteractionResult.ShouldOtherCounter(_character, other, other.CurrentHealth))
         {
             yield return other.GetAttackAloneSequence(_character);
         }

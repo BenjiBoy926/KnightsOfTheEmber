@@ -366,7 +366,7 @@ public class Player : MonoBehaviour
         {
             _activeCharacter.PreviewInteraction(characterAtCell);
 
-            InteractionResult result = _activeCharacter.PredictInteractionResult(characterAtCell);
+            InteractionResult result = InteractionResult.Calculate(_activeCharacter, characterAtCell);
             _detailPanel.Preview(result.Interactor);
             _previewDetailPanel.Populate(characterAtCell);
             _previewDetailPanel.Preview(result.Target);

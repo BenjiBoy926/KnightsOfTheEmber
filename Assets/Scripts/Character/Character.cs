@@ -536,11 +536,6 @@ public class Character : MonoBehaviour
         _range.ShowOpaqueRange();
     }
 
-    public InteractionResult PredictInteractionResult(Character other)
-    {
-        return _preview.PredictInteractionResult(other);
-    }
-
     // ── Attack Behaviour ─────────────────────────────────────────────────
 
     public IEnumerator GetAttackAloneSequence(Character other)
