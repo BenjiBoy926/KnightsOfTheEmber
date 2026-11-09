@@ -124,8 +124,7 @@ public class BattleCamera : MonoBehaviour
     public void Shove(Vector2 point)
     {
         Rect worldRect = GetWorldRect();
-        Vector2 direction = worldRect.Contains(point) ? Vector2.zero : (point - worldRect.center).normalized;
-        Velocity = direction * 5f;
+        Velocity = GetShoveDirection(worldRect, point) * 5f;
     }
 
     public Vector3 GetFramingPosition(Transform target)
@@ -165,6 +164,24 @@ public class BattleCamera : MonoBehaviour
         Vector2 min = center - extents;
         Vector2 max = center + extents;
         return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+    }
+
+    private Vector2 GetShoveDirection(Rect rect, Vector2 point)
+    {
+        return new(GetShoveDirection(rect, point, 0), GetShoveDirection(rect, point, 1));
+    }
+
+    private float GetShoveDirection(Rect rect, Vector2 point, int dimension)
+    {
+        if (point[dimension] < rect.min[dimension])
+        {
+            return -1;
+        }
+        else if (point[dimension] > rect.max[dimension])
+        {
+            return 1;
+        }
+        return 0;
     }
 
     private static Vector2 OffsetOutsideEdge(Rect rect, Vector2 point)
