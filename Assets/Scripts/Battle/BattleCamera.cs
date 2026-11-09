@@ -40,6 +40,7 @@ public class BattleCamera : MonoBehaviour
     private BattleCameraGrab _grab;
     private BattleCameraFollow _follow;
     private BattleCameraGlide _glide;
+    private Tween _zoomJumpTween;
 
     private void Awake()
     {
@@ -156,12 +157,22 @@ public class BattleCamera : MonoBehaviour
 
     private void OrthoSizeJump(float newOrthoSize)
     {
-        if (Mathf.Approximately(_camera.orthographicSize, newOrthoSize))
+        if (!ShouldDoOrthoSizeJump(newOrthoSize))
         {
             return;
         }
         _camera.DOKill();
-        _camera.DOOrthoSize(newOrthoSize, _zoomJumpDuration).SetEase(_zoomJumpEase);
+        _zoomJumpTween = _camera.DOOrthoSize(newOrthoSize, _zoomJumpDuration).SetEase(_zoomJumpEase);
+    }
+    
+    private bool ShouldDoOrthoSizeJump(float newOrthoSize)
+    {
+        return !Mathf.Approximately(_camera.orthographicSize, newOrthoSize) && !IsOrthoSizeTweening();
+    }
+
+    private bool IsOrthoSizeTweening()
+    {
+        return _zoomJumpTween.IsActive();
     }
 
     private Rect GetWorldRect(float margins)
