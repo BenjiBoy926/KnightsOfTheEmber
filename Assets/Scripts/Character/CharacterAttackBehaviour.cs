@@ -21,7 +21,6 @@ public class CharacterAttackBehaviour : MonoBehaviour
 
     private Character _character;
     private ArrowBlur _arrowBlur;
-    private bool _isAttackInitiator = false;
 
     private void Awake()
     {
@@ -31,18 +30,23 @@ public class CharacterAttackBehaviour : MonoBehaviour
 
     public IEnumerator GetSequence(Character other)
     {
-        return _character.IsRanged || other.IsRanged ?
-            GetAttackAloneSequence(other) :
-            GetAttackExchangeSequence(other);
+        yield return _character.BeginMoveSequence(other);
+        yield return GetAttackAloneSequence(other);
+        if (!other.IsRanged && !other.IsDead)
+        {
+            // other attacks
+        }
+        yield return _character.EndMoveSequence(other);
+        RemoveDeadCombatantsFromBattlefield(other);
     }
     
     private IEnumerator GetAttackAloneSequence(Character other)
     {
-        _isAttackInitiator = true;
-        yield return _character.BeginMoveSequence(other);
         yield return GetMeleeSwipeSequence(other);
 
+        // TODO: safe to move to hurt behaviour once we are done refactoring
         EazySoundManager.PlaySound(_hurtClip);
+
         _character.MoveToCellCenter();
         Coroutine otherHurtRoutine = StartCoroutine(other.GetHurtSequence(_character));
         while (_character.IsOneShotAnimationPlaying)
@@ -52,30 +56,6 @@ public class CharacterAttackBehaviour : MonoBehaviour
 
         _character.PlayIdleAnimation();
         yield return otherHurtRoutine;
-
-        _isAttackInitiator = false;
-        yield return _character.EndMoveSequence(other);
-        RemoveDeadCombatantsFromBattlefield(other);
-    }
-
-    private IEnumerator GetAttackExchangeSequence(Character other)
-    {
-        _isAttackInitiator = true;
-        yield return _character.BeginMoveSequence(other);
-
-        IEnumerator otherSwipeSequence = other.GetMeleeSwipeSequence(_character);
-        Coroutine otherSwipeRoutine = StartCoroutine(otherSwipeSequence);
-        yield return GetMeleeSwipeSequence(other);
-        yield return otherSwipeRoutine;
-
-        IEnumerator otherHurtSequence = other.GetHurtSequence(_character);
-        Coroutine otherHurtRoutine = StartCoroutine(otherHurtSequence);
-        yield return GetHurtSequence(other);
-        yield return otherHurtRoutine;
-
-        _isAttackInitiator = false;
-        yield return _character.EndMoveSequence(other);
-        RemoveDeadCombatantsFromBattlefield(other);
     }
 
     public IEnumerator GetMeleeSwipeSequence(Character other)
@@ -98,10 +78,7 @@ public class CharacterAttackBehaviour : MonoBehaviour
         Vector2 chargeOffset = chargeDirection * chargeMagnitude * _character.CellSize * towardsTarget;
         Vector2 chargePosition = cellPosition + chargeOffset;
 
-        if (_isAttackInitiator)
-        {
-            EazySoundManager.PlaySound(_windUpClip);
-        }
+        EazySoundManager.PlaySound(_windUpClip);
         int frameCount = _character.IsRanged ? RangedFrames : MeleeFrames;
         float totalChargeDuration = frameCount * ApproxFrameDuration;
         return transform.DOMove(chargePosition, totalChargeDuration)
@@ -111,19 +88,10 @@ public class CharacterAttackBehaviour : MonoBehaviour
 
     private IEnumerator AttackConnectSequence(Character other)
     {
-        if (_isAttackInitiator)
-        {
-            EazySoundManager.PlaySound(_attackConnectClip);
-        }
+        EazySoundManager.PlaySound(_attackConnectClip);
         _character.SetAnimationSpeed(0);
         yield return other.PlayAttackConnectShake();
         _character.SetAnimationSpeed(1);
-    }
-
-    private IEnumerator GetHurtSequence(Character other)
-    {
-        EazySoundManager.PlaySound(_hurtClip);
-        return _character.GetHurtSequence(other);
     }
 
     private void RemoveDeadCombatantsFromBattlefield(Character other)
