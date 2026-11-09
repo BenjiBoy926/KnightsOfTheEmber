@@ -30,11 +30,6 @@ public class Battle : MonoBehaviour
         get => _camera.Position;
         set => _camera.Position = value;
     }
-    public Vector2 CameraVelocity
-    {
-        get => _camera.Velocity;
-        set => _camera.Velocity = value;
-    }
     public bool IsDialoguePlaying => _dialogue.IsPlaying;
     public int CurrentStateIndex => _history.CurrentStateIndex;
     public int StateCount => _history.StateCount;

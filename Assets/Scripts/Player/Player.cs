@@ -12,16 +12,10 @@ public class Player : MonoBehaviour
     public Vector3 CommanderPosition => _faction.CommanderPosition;
     public bool IsInputAllowed => _isInputAllowed;
     public HashSet<Character> AllCharacters => _battle.AllCharacters;
-    public Vector2 CursorPosition => _cursor.Position;
     public Vector2 CameraPosition
     {
         get => _battle.CameraPosition;
         set => _battle.CameraPosition = value;
-    }
-    public Vector2 CameraVelocity
-    {
-        get => _battle.CameraVelocity;
-        set => _battle.CameraVelocity = value;
     }
 
     [SerializeField] private Faction _faction;
