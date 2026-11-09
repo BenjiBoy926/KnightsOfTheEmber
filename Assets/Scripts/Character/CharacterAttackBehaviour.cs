@@ -17,7 +17,6 @@ public class CharacterAttackBehaviour : MonoBehaviour
     [Space]
     [SerializeField] private AudioClip _windUpClip;
     [SerializeField] private AudioClip _attackConnectClip;
-    [SerializeField] private AudioClip _hurtClip;
 
     private Character _character;
     private ArrowBlur _arrowBlur;
@@ -43,9 +42,6 @@ public class CharacterAttackBehaviour : MonoBehaviour
     public IEnumerator GetAttackAloneSequence(Character other)
     {
         yield return GetMeleeSwipeSequence(other);
-
-        // TODO: safe to move to hurt behaviour once we are done refactoring
-        EazySoundManager.PlaySound(_hurtClip);
 
         _character.MoveToCellCenter();
         Coroutine otherHurtRoutine = StartCoroutine(other.GetHurtSequence(_character));

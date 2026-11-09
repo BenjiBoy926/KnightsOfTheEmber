@@ -19,6 +19,7 @@ public class CharacterHurtBehaviour : MonoBehaviour
     [SerializeField] private float _recoilDistance = 0.49f;
 
     [Space]
+    [SerializeField] private AudioClip _hurtClip;
     [SerializeField] private AudioClip _deathClip;
 
     private Character _character;
@@ -42,6 +43,7 @@ public class CharacterHurtBehaviour : MonoBehaviour
 
     public IEnumerator GetHurtSequence(Character attacker)
     {
+        EazySoundManager.PlaySound(_hurtClip);
         _character.TakeDamageFrom(attacker);
 
         Coroutine hurtAnimation = _character.PlayHurtAnimation();
