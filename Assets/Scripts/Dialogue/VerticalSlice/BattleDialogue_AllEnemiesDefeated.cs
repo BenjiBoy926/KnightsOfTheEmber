@@ -31,7 +31,7 @@ namespace VerticalSlice
             };
             string[] line3 = new string[]
             {
-                "We'd better get patched up. Thank Arkalux for the Ember's healing or we'd be done for!",
+                "We'd better get patched up. Thank Arkalux for the Wisp's healing or we'd be done for!",
                 "We'd better get patched up and move out before reinforcements come.",
                 "We'd better get patched up. Let's get out of here!",
                 "We'd better get patched up and move on."

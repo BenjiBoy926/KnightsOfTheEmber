@@ -34,25 +34,25 @@ namespace VerticalSlice
             }
 
             yield return Dialogue.FirstMatchingMainCharacterSay(target,
-                "Was this the Ember's doing? What happened?",
+                "Was this the Wisp's doing? What happened?",
                 "What happened?",
                 "Sooooo, what happened?!",
                 "What happened?");
 
             yield return Dialogue.FirstMatchingMainCharacterSay(interactor,
-                "It was the Ember's doing. Somehow it used me to heal you.",
-                "I'm not sure. Somehow the Ember used me to heal you.",
-                "Beats me! I felt the Ember's energy coursing through me, and suddenly you were okay!",
-                "I think the Ember used me to heal you.");
+                "It was the Wisp's doing. Somehow it used me to heal you.",
+                "I'm not sure. Somehow the Wisp used me to heal you.",
+                "Beats me! I felt the Wisp's energy coursing through me, and suddenly you were okay!",
+                "I think the Wisp used me to heal you.");
 
             yield return Dialogue.FirstMatchingMainCharacterSay(target,
-                "So it WAS the Ember!",
-                "The Ember? Remarkable...",
-                "So it was the Ember, huh?",
-                "The Ember? Well... that should help to even the odds.");
+                "So it WAS the Wisp!",
+                "The Wisp? Remarkable...",
+                "So it was the Wisp, huh?",
+                "The Wisp? Well... that should help to even the odds.");
 
             yield return Dialogue.FirstMatchingMainCharacterSay(target,
-                "We can win now, I'm sure of it! Arkalux will uphold us with his Ember!",
+                "We can win now, I'm sure of it! Arkalux will uphold us with his Wisp!",
                 "Using this power, we can work together and cut down this horde!",
                 "We can use this power to break through their ranks! Let's go!",
                 "Let's use this power to overcome these monsters.");

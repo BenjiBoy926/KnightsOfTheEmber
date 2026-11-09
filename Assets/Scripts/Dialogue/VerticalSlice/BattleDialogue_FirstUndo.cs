@@ -98,9 +98,9 @@ namespace VerticalSlice
                 new(Alfred, "Is this some stunt that the goblins are trying to pull?!"));
 
             yield return Dialogue.FirstLiveCharacterSay(
-                new(Robin, "I don't think so. There was a blue flash... it looked like it came from the Ember."),
-                new(Gregory, "No... There was a blue flash... did it come from the Ember?"),
-                new(Hayden, "But there was a blue flash... did it come from the Ember?"));
+                new(Robin, "I don't think so. There was a blue flash... it looked like it came from the Wisp."),
+                new(Gregory, "No... There was a blue flash... did it come from the Wisp?"),
+                new(Hayden, "But there was a blue flash... did it come from the Wisp?"));
 
             yield return playerWhoWasDead.Say("How strange...");
         }
@@ -132,9 +132,9 @@ namespace VerticalSlice
                 new(Alfred, "Is this some stunt that the goblins are trying to pull?!"));
 
             yield return Dialogue.FirstLiveCharacterSay(
-                new(Robin, "I don't think so. The blue flash looked like it came from the Ember."),
-                new(Gregory, "No... The blue flash looked like it came from the Ember."),
-                new(Hayden, "But the blue flash looked like it came from the Ember..."));
+                new(Robin, "I don't think so. The blue flash looked like it came from the Wisp."),
+                new(Gregory, "No... The blue flash looked like it came from the Wisp."),
+                new(Hayden, "But the blue flash looked like it came from the Wisp..."));
 
             yield return Dialogue.FirstLiveCharacterSay(
                 new(Gregory, "How strange..."),
@@ -196,9 +196,9 @@ namespace VerticalSlice
                 new(Alfred, "Is this some stunt that the goblins are trying to pull?!"));
 
             yield return Dialogue.FirstLiveCharacterSay(
-                new(Robin, "I don't think so. There was a blue flash... it looked like it came from the Ember."),
-                new(Gregory, "No... There was a blue flash... did it come from the Ember."),
-                new(Hayden, "But there was a blue flash... did it come from the Ember?"));
+                new(Robin, "I don't think so. There was a blue flash... it looked like it came from the Wisp."),
+                new(Gregory, "No... There was a blue flash... did it come from the Wisp."),
+                new(Hayden, "But there was a blue flash... did it come from the Wisp?"));
 
             yield return movedPlayer.Say("How strange...");
         }

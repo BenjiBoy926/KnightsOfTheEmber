@@ -21,10 +21,10 @@ namespace VerticalSlice
                 "Hm? My wounds are all healed. What was that?");
 
             yield return Dialogue.FirstMatchingMainCharacterSay(interactor,
-                "I think the Ember just used me to heal you!",
-                "Not exactly sure, but I think the Ember used me to heal you.",
-                "No idea! I was just following the Ember, then suddenly I felt energy race through me and into you.",
-                "...It seems like the Ember used me to heal you.");
+                "I think the Wisp just used me to heal you!",
+                "Not exactly sure, but I think the Wisp used me to heal you.",
+                "No idea! I was just following the Wisp, then suddenly I felt energy race through me and into you.",
+                "...It seems like the Wisp used me to heal you.");
 
             yield return Dialogue.FirstMatchingMainCharacterSay(target,
                 "What an incredible power! We can use this to beat back the goblins!",

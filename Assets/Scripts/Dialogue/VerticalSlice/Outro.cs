@@ -40,21 +40,21 @@ namespace VerticalSlice
 
             yield return Alfred.Say("That was AMAZING!");
             yield return Alfred.Say("An entire battalion of goblins, and there's hardly a scratch on us!");
-            yield return Robin.Say("This 'Ember' has unusual healing powers.");
+            yield return Robin.Say("This 'Wisp' has unusual healing powers.");
 
             // NOTE: this is a little awkward if the player nerver performs an undo
             yield return Robin.Say("It seems like it can even manipulate time...");
             yield return Alfred.Say("Woah, woah, what? Time travel? What are you talking about?");
             yield return Robin.Say("You saw it too, didn't you?");
             yield return Robin.Say("One moment you're in one part of the battlefield, then there's a bright flash, and suddenly you're back where you started.");
-            yield return Alfred.Say("You think that was the Ember... turning back time?!");
+            yield return Alfred.Say("You think that was the Wisp... turning back time?!");
             // --- end note
 
             yield return Alfred.Say("We're UNSTOPPABLE!!");
             yield return Gregory.Say("Not so fast.");
             yield return Gregory.Say("It can only heal through one of us.");
             yield return Gregory.Say("If we all die, there's no coming back from that.");
-            yield return Alfred.Say("But then the Ember would just rewind time so we could change strategies, right?");
+            yield return Alfred.Say("But then the Wisp would just rewind time so we could change strategies, right?");
             yield return Gregory.Say("I wouldn't be too sure...");
             yield return Gregory.Say("Hayden, what do you think?");
             yield return new WaitForSeconds(_haydenPause);
@@ -75,7 +75,7 @@ namespace VerticalSlice
             yield return Robin.Say("Perhaps Ha'all is some great Orc leading them out of hiding.");
             yield return Hayden.Say("How strange...");
             yield return new WaitForSeconds(_haydenPause2);
-            yield return Hayden.Say("(Who is Ha'all? And where could the Ember be leading us?)");
+            yield return Hayden.Say("(Who is Ha'all? And where could the Wisp be leading us?)");
             yield return Hayden.Say("(What could it all mean...?)");
 
             yield return FadeOut();

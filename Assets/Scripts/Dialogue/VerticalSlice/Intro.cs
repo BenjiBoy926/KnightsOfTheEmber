@@ -67,7 +67,7 @@ namespace VerticalSlice
 
             yield return LightFadeInSequence();
 
-            yield return Hayden.Say("There! It's the Ember! Oh, thank Arkalux!");
+            yield return Hayden.Say("There! It's the Wisp! Oh, thank Arkalux!");
             _ambush.Play();
             yield return Robin.Say("Don't thank him just yet. It's led us into a trap.");
             yield return Hayden.Say("What?");
@@ -76,7 +76,7 @@ namespace VerticalSlice
             yield return Alfred.Say("Come on! We can take 'em!");
             yield return Robin.Say("Don't be ridiculous. We have to retreat.");
             yield return Hayden.Say("No! We'll only be lost in the dark.");
-            yield return Hayden.Say("We must stay near the Ember at all costs.");
+            yield return Hayden.Say("We must stay near the Wisp at all costs.");
             yield return Gregory.Say("He's right. If we work together, we can win. I'm sure of it.");
             _ambush.Stop();
 
