@@ -97,6 +97,11 @@ public class Player : MonoBehaviour
         _battle.IncludeInView(_cursor.Position);
     }
 
+    public void ShoveCamera()
+    {
+        _battle.ShoveCamera(_cursor.Position);
+    }
+
     public void ChangeZoom(float zoom)
     {
         _battle.ChangeZoom(zoom);

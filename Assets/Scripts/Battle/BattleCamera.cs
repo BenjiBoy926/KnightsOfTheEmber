@@ -121,6 +121,13 @@ public class BattleCamera : MonoBehaviour
 
     // Self
 
+    public void Shove(Vector2 point)
+    {
+        Rect worldRect = GetWorldRect();
+        Vector2 direction = worldRect.Contains(point) ? Vector2.zero : (point - worldRect.center).normalized;
+        Velocity = direction * 5f;
+    }
+
     public Vector3 GetFramingPosition(Transform target)
     {
         return GetFramingPosition(target.position);
@@ -145,14 +152,14 @@ public class BattleCamera : MonoBehaviour
 
     public void IncludeInView(Vector2 position)
     {
-        Rect rect = GetWorldRect(_viewMargin);
+        Rect rect = GetWorldRect();
         Vector2 offset = OffsetOutsideEdge(rect, position);
         Position += offset;
     }
 
-    private Rect GetWorldRect(float margins)
+    private Rect GetWorldRect()
     {
-        Vector2 marginVector = new(margins, margins);
+        Vector2 marginVector = new(_viewMargin, _viewMargin);
         Vector2 extents = WorldExtents - (marginVector * 2);
         Vector2 center = Position;
         Vector2 min = center - extents;

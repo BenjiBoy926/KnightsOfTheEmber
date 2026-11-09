@@ -65,7 +65,7 @@ public class PlayerInput : MonoBehaviour, DefaultActions.IPlayerActions
         _player.SetScreenPosition(screenPosition);
         if (_player.ActiveCharacter)
         {
-            _player.IncludeInView();
+            _player.ShoveCamera();
         }
     }
 

@@ -266,6 +266,11 @@ public class Battle : MonoBehaviour
 
     // Camera ===
 
+    public void ShoveCamera(Vector2 point)
+    {
+        _camera.Shove(point);
+    }
+
     public void GrabCamera(Vector2 worldPosition)
     {
         _camera.Grab(worldPosition);
