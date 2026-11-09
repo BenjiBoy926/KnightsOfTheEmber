@@ -1,12 +1,12 @@
 using DG.Tweening;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 [RequireComponent(typeof(Camera))]
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(BattleCameraGrab))]
 [RequireComponent(typeof(BattleCameraFollow))]
 [RequireComponent(typeof(BattleCameraGlide))]
+[RequireComponent(typeof(BattleCameraZoom))]
 public class BattleCamera : MonoBehaviour
 {
     public bool IsGliding => _glide.IsActive;
@@ -15,7 +15,12 @@ public class BattleCamera : MonoBehaviour
     private float WorldWidth => WorldHeight * _camera.aspect;
     public Vector2 WorldSize => new(WorldWidth, WorldHeight);
     private Vector2 WorldExtents => WorldSize / 2f;
-    private float CurrentZoom => OrthoSizeToZoom(_camera.orthographicSize);
+    public Camera Camera => _camera;
+    public float OrthographicSize
+    {
+        get => _camera.orthographicSize;
+        set => _camera.orthographicSize = value;
+    }
     public Vector2 Position
     {
         get => transform.position;
@@ -40,6 +45,7 @@ public class BattleCamera : MonoBehaviour
     private BattleCameraGrab _grab;
     private BattleCameraFollow _follow;
     private BattleCameraGlide _glide;
+    private BattleCameraZoom _zoom;
     private Tween _zoomJumpTween;
 
     private void Awake()
@@ -49,6 +55,7 @@ public class BattleCamera : MonoBehaviour
         _grab = GetComponent<BattleCameraGrab>();
         _follow = GetComponent<BattleCameraFollow>();
         _glide = GetComponent<BattleCameraGlide>();
+        _zoom = GetComponent<BattleCameraZoom>();
     }
 
     // Grab
@@ -97,6 +104,28 @@ public class BattleCamera : MonoBehaviour
         _glide.End();
     }
 
+    // Zoom
+
+    public void ChangeZoom(float zoomDelta)
+    {
+        _zoom.ChangeZoom(zoomDelta);
+    }
+
+    public void SetZoom(float zoom)
+    {
+        _zoom.SetZoom(zoom);
+    }
+
+    public void ZoomIn()
+    {
+        _zoom.ZoomIn();
+    }
+
+    public void ZoomOut()
+    {
+        _zoom.ZoomOut();
+    }
+
     // Self
 
     public Vector3 GetFramingPosition(Transform target)
@@ -128,53 +157,6 @@ public class BattleCamera : MonoBehaviour
         Position += offset;
     }
 
-    public void ChangeZoom(float zoomDelta) 
-    { 
-        SetZoom(CurrentZoom + zoomDelta);
-    }
-
-    public void SetZoom(float zoom)
-    {
-        _camera.orthographicSize = ZoomToOrthoSize(zoom);
-    }
-
-    public void ZoomIn()
-    {
-        ZoomJump(+_zoomJump);
-    }
-
-    public void ZoomOut()
-    {
-        ZoomJump(-_zoomJump);
-    }
-
-    private void ZoomJump(float jumpAmount)
-    {
-        float newZoom = CurrentZoom + jumpAmount;
-        float newOrthoSize = ZoomToOrthoSize(newZoom);
-        OrthoSizeJump(newOrthoSize);
-    }
-
-    private void OrthoSizeJump(float newOrthoSize)
-    {
-        if (!ShouldDoOrthoSizeJump(newOrthoSize))
-        {
-            return;
-        }
-        _camera.DOKill();
-        _zoomJumpTween = _camera.DOOrthoSize(newOrthoSize, _zoomJumpDuration).SetEase(_zoomJumpEase);
-    }
-    
-    private bool ShouldDoOrthoSizeJump(float newOrthoSize)
-    {
-        return !Mathf.Approximately(_camera.orthographicSize, newOrthoSize) && !IsOrthoSizeTweening();
-    }
-
-    private bool IsOrthoSizeTweening()
-    {
-        return _zoomJumpTween.IsActive();
-    }
-
     private Rect GetWorldRect(float margins)
     {
         Vector2 marginVector = new(margins, margins);
@@ -203,17 +185,5 @@ public class BattleCamera : MonoBehaviour
             return value - max;
         }
         return 0;
-    }
-
-    private float OrthoSizeToZoom(float orthoSize)
-    {
-        float invZoom = Mathf.InverseLerp(_viewSizeRange.x, _viewSizeRange.y, orthoSize);
-        return 1 - invZoom;
-    }
-
-    private float ZoomToOrthoSize(float zoom)
-    {
-        float t = 1 - zoom;
-        return Mathf.Lerp(_viewSizeRange.x, _viewSizeRange.y, t);
     }
 }
