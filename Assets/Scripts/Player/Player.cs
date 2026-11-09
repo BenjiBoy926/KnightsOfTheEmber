@@ -143,13 +143,18 @@ public class Player : MonoBehaviour
     public void Grab()
     {
         Character characterAtCursor = GetCharacterAtCurrentCell();
-        if (characterAtCursor)
+        if (CanMoveCharacter(characterAtCursor))
         {
-            StartMove();
+            SetActiveCharacter(characterAtCursor);
+            EazySoundManager.PlaySound(_moveStartClip);
         }
         else
         {
             _battle.GrabCamera(_cursor.Position);
+        }
+        if (!characterAtCursor)
+        {
+            _cursor.Burst();
         }
     }
 
@@ -162,16 +167,6 @@ public class Player : MonoBehaviour
         else
         {
             _battle.ReleaseCamera();
-        }
-    }
-
-    public void StartMove()
-    {
-        Character characterAtCursor = GetCharacterAtCurrentCell();
-        if (CanMoveCharacter(characterAtCursor))
-        {
-            SetActiveCharacter(characterAtCursor);
-            EazySoundManager.PlaySound(_moveStartClip);
         }
     }
 

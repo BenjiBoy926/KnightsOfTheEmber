@@ -7,13 +7,18 @@ public class PlayerCursorFire : MonoBehaviour
 
     public void Show()
     {
-        _burst.Play();
+        Burst();
         _fire.Play();
     }
 
     public void Hide()
     {
-        _burst.Play();
+        Burst();
         _fire.Stop();
+    }
+
+    public void Burst()
+    {
+        _burst.Play();
     }
 }

@@ -63,6 +63,11 @@ public class PlayerCursor : MonoBehaviour
         }
     }
 
+    public void Burst()
+    {
+        _fire.Burst();
+    }
+
     private void SetIsVisible(bool isVisible)
     {
         if (_isVisible == isVisible)
