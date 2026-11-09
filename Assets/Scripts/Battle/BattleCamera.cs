@@ -121,10 +121,10 @@ public class BattleCamera : MonoBehaviour
 
     // Self
 
-    public void Shove(Vector2 point)
+    public Vector2 GetShoveDirection(Vector2 point)
     {
-        Rect worldRect = GetWorldRect();
-        Velocity = GetShoveDirection(worldRect, point) * 5f;
+        Rect rect = GetWorldRect();
+        return GetShoveDirection(rect, point);
     }
 
     public Vector3 GetFramingPosition(Transform target)

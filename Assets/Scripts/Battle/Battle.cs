@@ -30,6 +30,11 @@ public class Battle : MonoBehaviour
         get => _camera.Position;
         set => _camera.Position = value;
     }
+    public Vector2 CameraVelocity
+    {
+        get => _camera.Velocity;
+        set => _camera.Velocity = value;
+    }
     public bool IsDialoguePlaying => _dialogue.IsPlaying;
     public int CurrentStateIndex => _history.CurrentStateIndex;
     public int StateCount => _history.StateCount;
@@ -266,9 +271,9 @@ public class Battle : MonoBehaviour
 
     // Camera ===
 
-    public void ShoveCamera(Vector2 point)
+    public Vector2 GetCameraShoveDirection(Vector2 point)
     {
-        _camera.Shove(point);
+        return _camera.GetShoveDirection(point);
     }
 
     public void GrabCamera(Vector2 worldPosition)

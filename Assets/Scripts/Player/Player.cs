@@ -13,6 +13,11 @@ public class Player : MonoBehaviour
     public bool IsInputAllowed => _isInputAllowed;
     public HashSet<Character> AllCharacters => _battle.AllCharacters;
     public Vector2 CursorPosition => _cursor.Position;
+    public Vector2 CameraVelocity
+    {
+        get => _battle.CameraVelocity;
+        set => _battle.CameraVelocity = value;
+    }
 
     [SerializeField] private Faction _faction;
     [SerializeField] private AudioSource _cellHoverAudio;
@@ -97,9 +102,9 @@ public class Player : MonoBehaviour
         _battle.IncludeInView(_cursor.Position);
     }
 
-    public void ShoveCamera()
+    public Vector2 GetCameraShoveDirection()
     {
-        _battle.ShoveCamera(_cursor.Position);
+        return _battle.GetCameraShoveDirection(_cursor.Position);
     }
 
     public void ChangeZoom(float zoom)

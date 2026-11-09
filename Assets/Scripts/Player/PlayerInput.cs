@@ -4,6 +4,11 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Player))]
 public class PlayerInput : MonoBehaviour, DefaultActions.IPlayerActions
 {
+    private enum MoveSourceType
+    {
+        Button, Cursor
+    }
+
     private bool ShouldMoveFaster => (_isConfirmPressed && !_player.ActiveCharacter) || _isCancelPressed;
 
     [SerializeField] private float _speed = 5;
@@ -13,6 +18,7 @@ public class PlayerInput : MonoBehaviour, DefaultActions.IPlayerActions
     private Player _player;
     private DefaultActions _actions;
     private Vector2 _moveDirection;
+    private MoveSourceType _currentMoveSource = MoveSourceType.Button;
     private bool _isConfirmPressed = false;
     private bool _isCancelPressed = false;
     private float _zoomDirection;
@@ -42,18 +48,32 @@ public class PlayerInput : MonoBehaviour, DefaultActions.IPlayerActions
 
         if (_moveDirection.sqrMagnitude > 0.01f)
         {
-            float speed = ShouldMoveFaster ? _fasterSpeed : _speed;
-            Vector2 offsetThisFrame = speed * Time.deltaTime * _moveDirection;
-            _player.SlidePosition(offsetThisFrame);
-            _player.IncludeInView();
+            ApplyMoveDirection();
         }
         float zoomChangeThisFrame = _zoomChangeSpeed * Time.deltaTime * _zoomDirection;
         _player.ChangeZoom(zoomChangeThisFrame);
     }
 
+    private void ApplyMoveDirection()
+    {
+        float speed = ShouldMoveFaster ? _fasterSpeed : _speed;
+        Vector2 velocity = speed * _moveDirection;
+        Vector2 offsetThisFrame = velocity * Time.deltaTime;
+        _player.SlidePosition(offsetThisFrame);
+        if (_currentMoveSource == MoveSourceType.Button)
+        {
+            _player.IncludeInView();
+        }
+        else
+        {
+            _player.CameraVelocity = velocity;
+        }
+    }
+
     public void OnMove(InputAction.CallbackContext context)
     {
-       _moveDirection = context.ReadValue<Vector2>();
+        _moveDirection = context.ReadValue<Vector2>();
+        _currentMoveSource = MoveSourceType.Button;
     }
 
     public void OnCursorPosition(InputAction.CallbackContext context)
@@ -63,9 +83,14 @@ public class PlayerInput : MonoBehaviour, DefaultActions.IPlayerActions
 
         Vector2 screenPosition = context.ReadValue<Vector2>();
         _player.SetScreenPosition(screenPosition);
+        _currentMoveSource = MoveSourceType.Cursor;
         if (_player.ActiveCharacter)
         {
-            _player.ShoveCamera();
+            _moveDirection = _player.GetCameraShoveDirection();
+        }
+        else
+        {
+            _moveDirection = Vector2.zero;
         }
     }
 
