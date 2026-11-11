@@ -206,6 +206,10 @@ public class Character : MonoBehaviour
         {
             LookAt(other.Position);
         }
+        else
+        {
+            SetDirection(GetHorizontalDirectionAwayFromPreviousCell());
+        }
         if (other && other.IsAlive)
         {
             other.LookAt(Position);
@@ -222,12 +226,10 @@ public class Character : MonoBehaviour
     public IEnumerator EndMoveSequence(Character other)
     {
         yield return _battle.GetMoveFinishDialogue(this, other);
-        
+
         ChangeEnergy(-1);
 
-        Vector2Int previousCell = GetLastRecordedState().Cell;
-        Vector2Int currentCell = CurrentCell;
-        Vector2 direction = currentCell - previousCell;
+        Vector2 direction = GetHorizontalDirectionAwayFromPreviousCell();
         if (IsAlive)
         {
             SetDirection(direction);
@@ -255,16 +257,18 @@ public class Character : MonoBehaviour
         _battle.NotifyCharacterMoveFinished(this, other);
     }
 
+    private Vector2 GetHorizontalDirectionAwayFromPreviousCell()
+    {
+        Vector2Int previousCell = GetLastRecordedState().Cell;
+        Vector2Int currentCell = CurrentCell;
+        Vector2 direction = currentCell - previousCell;
+        direction.y = 0;
+        return direction;
+    }
+
     public void LookAt(Vector2 position)
     {
         Vector2 direction = position - Position;
-        SetDirection(direction);
-    }
-
-    public void LookAtHorizontal(Vector2 position)
-    {
-        Vector2 direction = position - Position;
-        direction.y = 0;
         SetDirection(direction);
     }
 
