@@ -29,8 +29,9 @@ public class Player : MonoBehaviour
     private PlayerGridReticle _gridReticle;
     private PlayerActionTimer _actionTimer;
     private RangeWarningSystem _rangeWarning;
-    private Character _activeCharacter;
+    private Character _characterAtCurrentCell;
     private Character _hoveredCharacter;
+    private Character _activeCharacter;
     private ActionDirectionIndicator _actionDirectionIndicator;
     private Vector2Int _currentCell;
     private bool _isInputAllowed = false;
@@ -143,25 +144,24 @@ public class Player : MonoBehaviour
     public void SetPosition(Vector2 newPosition)
     {
         newPosition = _battle.ClampToField(newPosition);
-        SetActiveCharacterPosition(newPosition);
-        SetCursorPosition(newPosition);
         RefreshCurrentCell();
+        SetCursorPosition(newPosition);
+        SetActiveCharacterPosition(newPosition);
         CancelEndTurn();
     }
 
     public void Grab()
     {
-        Character characterAtCursor = GetCharacterAtCurrentCell();
-        if (CanMoveCharacter(characterAtCursor))
+        if (CanMoveCharacter(_characterAtCurrentCell))
         {
-            SetActiveCharacter(characterAtCursor);
+            SetActiveCharacter(_characterAtCurrentCell);
             EazySoundManager.PlaySound(_moveStartClip);
         }
         else
         {
             _battle.GrabCamera(_cursor.Position);
         }
-        if (!characterAtCursor)
+        if (!_characterAtCurrentCell)
         {
             _cursor.Burst();
         }
@@ -200,18 +200,17 @@ public class Player : MonoBehaviour
         if (!_activeCharacter)
             return;
 
-        Character target = GetCharacterAtCurrentCell();
-        if (!target || target == _activeCharacter)
+        if (!IsTargettingOtherCharacter())
         {
             _activeCharacter.Defend();
         }
-        else if (target.Faction == _activeCharacter.Faction)
+        else if (_characterAtCurrentCell.Faction == _activeCharacter.Faction)
         {
-            _activeCharacter.Heal(target);
+            _activeCharacter.Heal(_characterAtCurrentCell);
         }
         else
         {
-            _activeCharacter.Attack(target);
+            _activeCharacter.Attack(_characterAtCurrentCell);
         }
         Deselect();
     }
@@ -246,8 +245,7 @@ public class Player : MonoBehaviour
         if (!_activeCharacter)
             return;
 
-        Character characterUnderCursor = GetCharacterAtCurrentCell();
-        bool isTargeting = characterUnderCursor && characterUnderCursor != _activeCharacter;
+        bool isTargeting = IsTargettingOtherCharacter();
         if (!isTargeting)
         {
             Vector2 direction = newPosition - _activeCharacter.Position;
@@ -260,7 +258,7 @@ public class Player : MonoBehaviour
 
         if (isTargeting)
         {
-            _activeCharacter.LookAt(characterUnderCursor.Position);
+            _activeCharacter.LookAt(_characterAtCurrentCell.Position);
         }
     }
 
@@ -337,11 +335,6 @@ public class Player : MonoBehaviour
         }
     }
 
-    public Character GetCharacterAtCurrentCell()
-    {
-        return _battle.GetOccupant(_currentCell);
-    }
-
     private void RefreshCurrentCell()
     {
         Vector2Int cell = _battle.WorldToCell(_cursor.Position);
@@ -353,10 +346,11 @@ public class Player : MonoBehaviour
         if (_currentCell == cell) return;
 
         _currentCell = cell;
+        _characterAtCurrentCell = _battle.GetOccupant(_currentCell);
 
         Vector2 worldPosition = _battle.CellToWorld(_currentCell);
         _gridReticle.MoveToPosition(worldPosition);
-        _actionDirectionIndicator.SetTarget(GetCharacterAtCurrentCell());
+        _actionDirectionIndicator.SetTarget(_characterAtCurrentCell);
         if (_isInputAllowed)
         {
             _cellHoverAudio.Play();
@@ -369,7 +363,7 @@ public class Player : MonoBehaviour
     {
         if (!_activeCharacter && _isInputAllowed)
         {
-            SetHoveredCharacter(GetCharacterAtCurrentCell());
+            SetHoveredCharacter(_characterAtCurrentCell);
         }
     }
 
@@ -378,14 +372,13 @@ public class Player : MonoBehaviour
         if (!_activeCharacter) 
             return;
 
-        Character characterAtCell = GetCharacterAtCurrentCell();
-        if (characterAtCell && characterAtCell != _activeCharacter)
+        if (IsTargettingOtherCharacter())
         {
-            _activeCharacter.PreviewInteraction(characterAtCell);
+            _activeCharacter.PreviewInteraction(_characterAtCurrentCell);
 
-            InteractionResult result = InteractionResult.Calculate(_activeCharacter, characterAtCell);
+            InteractionResult result = InteractionResult.Calculate(_activeCharacter, _characterAtCurrentCell);
             _detailPanel.Preview(result.Interactor);
-            _previewDetailPanel.Populate(characterAtCell);
+            _previewDetailPanel.Populate(_characterAtCurrentCell);
             _previewDetailPanel.Preview(result.Target);
             _previewDetailPanel.Show();
         }
@@ -393,6 +386,11 @@ public class Player : MonoBehaviour
         {
             ClearPreview();
         }
+    }
+
+    private bool IsTargettingOtherCharacter()
+    {
+        return _activeCharacter && _characterAtCurrentCell && _characterAtCurrentCell != _activeCharacter;
     }
 
     private void ClearPreview()
