@@ -222,12 +222,25 @@ public class Character : MonoBehaviour
     public IEnumerator EndMoveSequence(Character other)
     {
         yield return _battle.GetMoveFinishDialogue(this, other);
+        
+        ChangeEnergy(-1);
+
+        Vector2Int previousCell = GetLastRecordedState().Cell;
+        Vector2Int currentCell = CurrentCell;
+        Vector2 direction = currentCell - previousCell;
+        if (IsAlive)
+        {
+            SetDirection(direction);
+        }
+        if (other && other.IsAlive)
+        {
+            other.SetDirection(-direction);
+        }
 
         if (other)
         {
             other.FadeAppearanceToTargetState();
         }
-        ChangeEnergy(-1);
         yield return FadeAppearanceToTargetState();
 
         SetIsActing(false);
