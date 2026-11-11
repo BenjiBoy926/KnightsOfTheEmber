@@ -7,9 +7,19 @@ namespace VerticalSlice
     {
         public override TriggerType Trigger => TriggerType.MoveEnd;
 
+        private BattleDialogue_FirstReviveFinish _reviveFinish;
+
+        private void Awake()
+        {
+            _reviveFinish = GetComponent<BattleDialogue_FirstReviveFinish>();
+        }
+
         public override bool ShouldPlay(Character interactor, Character target)
         {
-            return !HasPlayed && target && interactor.Faction == target.Faction && target.GetLastRecordedState().Health > 0;
+            bool didHeal = target && interactor.Faction == target.Faction;
+            bool didRevive = target && target.GetLastRecordedState().Health <= 0;
+            bool hasReviveDialoguePlayed = _reviveFinish && _reviveFinish.HasPlayed;
+            return !HasPlayed && didHeal && !didRevive && !hasReviveDialoguePlayed;
         }
 
         protected override IEnumerator GetSequence(Character interactor, Character target)
