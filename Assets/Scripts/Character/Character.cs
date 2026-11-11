@@ -248,6 +248,13 @@ public class Character : MonoBehaviour
         SetDirection(direction);
     }
 
+    public void LookAtHorizontal(Vector2 position)
+    {
+        Vector2 direction = position - Position;
+        direction.y = 0;
+        SetDirection(direction);
+    }
+
     public void PlayIdleAnimation()
     {
         SetIsRunning(false);

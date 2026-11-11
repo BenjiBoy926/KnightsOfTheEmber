@@ -66,8 +66,6 @@ public class CharacterAnimator : MonoBehaviour
 
     public void SetDirection(Vector2 direction)
     {
-        direction = direction.normalized;
-
         bool isHorizontal = Mathf.Abs(direction.x) > Mathf.Abs(direction.y);
         bool isVertical = !isHorizontal;
 

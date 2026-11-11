@@ -246,9 +246,22 @@ public class Player : MonoBehaviour
         if (!_activeCharacter)
             return;
 
-        _activeCharacter.LookAt(newPosition);
+        Character characterUnderCursor = GetCharacterAtCurrentCell();
+        bool isTargeting = characterUnderCursor && characterUnderCursor != _activeCharacter;
+        if (!isTargeting)
+        {
+            Vector2 direction = newPosition - _activeCharacter.Position;
+            direction.y = 0;
+            _activeCharacter.SetDirection(direction);
+        }
+
         _activeCharacter.Position = _activeCharacter.ClampToStayableCells(newPosition);
         _activeCharacter.RefreshCell();
+
+        if (isTargeting)
+        {
+            _activeCharacter.LookAt(characterUnderCursor.Position);
+        }
     }
 
     private void SetHoveredCharacter(Character hoveredCharacter)
