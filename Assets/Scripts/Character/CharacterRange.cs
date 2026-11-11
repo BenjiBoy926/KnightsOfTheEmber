@@ -52,6 +52,8 @@ public class CharacterRange : MonoBehaviour
         destination.Clear();
         foreach (var sourceCell in source)
         {
+            destination.Add(sourceCell);
+
             CellNeighbors neighbors = CellNeighbors.Get(sourceCell);
             for (int i = 0; i < CellNeighbors.Count; i++)
             {
