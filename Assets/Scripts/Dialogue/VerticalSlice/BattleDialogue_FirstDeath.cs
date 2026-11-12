@@ -43,8 +43,8 @@ namespace VerticalSlice
                     new(Gregory, "No. We cannot leave him."));
 
                 yield return Dialogue.FirstLiveCharacterSay(
-                    new(Gregory, "He's right. We must stick together. We must fight on!"),
-                    new(Hayden, "He's right. We won't retreat."));
+                    new(Hayden, "He's right. We won't retreat."),
+                    new(Gregory, "He's right. We must stick together. We must fight on!"));
 
                 if (Hayden.IsAlive)
                 {
