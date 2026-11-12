@@ -229,7 +229,15 @@ namespace VerticalSlice
 
         private bool DidUndoEnemyTurn()
         {
-            return Battle.LatestStateIndex - Battle.CurrentStateIndex > 1;
+            for (int i = Battle.CurrentStateIndex + 1; i < Battle.StateCount; i++)
+            {
+                BattleState state = Battle.GetState(i);
+                if (state.CurrentTurn != Battle.PlayerFaction)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private Character GetMovedPlayer()
