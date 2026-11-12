@@ -245,21 +245,9 @@ public class Player : MonoBehaviour
         if (!_activeCharacter)
             return;
 
-        bool isTargeting = IsTargettingOtherCharacter();
-        if (!isTargeting)
-        {
-            Vector2 direction = newPosition - _activeCharacter.Position;
-            direction.y = 0;
-            _activeCharacter.SetDirection(direction);
-        }
-
+        _activeCharacter.LookAt(newPosition);
         _activeCharacter.Position = _activeCharacter.ClampToStayableCells(newPosition);
         _activeCharacter.RefreshCell();
-
-        if (isTargeting)
-        {
-            _activeCharacter.LookAt(_characterAtCurrentCell.Position);
-        }
     }
 
     private void SetHoveredCharacter(Character hoveredCharacter)
