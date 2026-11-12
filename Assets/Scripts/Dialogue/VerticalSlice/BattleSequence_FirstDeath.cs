@@ -3,7 +3,7 @@ using static UniqueCharacters;
 
 namespace VerticalSlice
 {
-    public class BattleDialogue_FirstDeath : BattleSequence
+    public class BattleSequence_FirstDeath : BattleSequence
     {
         public override TriggerType Trigger => TriggerType.MoveEnd;
 

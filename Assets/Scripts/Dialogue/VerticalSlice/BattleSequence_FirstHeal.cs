@@ -3,15 +3,15 @@ using static UniqueCharacters;
 
 namespace VerticalSlice
 {
-    public class BattleDialogue_FirstHeal : BattleSequence
+    public class BattleSequence_FirstHeal : BattleSequence
     {
         public override TriggerType Trigger => TriggerType.MoveEnd;
 
-        private BattleDialogue_FirstReviveFinish _reviveFinish;
+        private BattleSequence_FirstReviveFinish _reviveFinish;
 
         private void Awake()
         {
-            _reviveFinish = GetComponent<BattleDialogue_FirstReviveFinish>();
+            _reviveFinish = GetComponent<BattleSequence_FirstReviveFinish>();
         }
 
         public override bool ShouldPlay(Character interactor, Character target)

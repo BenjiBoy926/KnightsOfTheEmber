@@ -4,7 +4,7 @@ using static UniqueCharacters;
 
 namespace VerticalSlice
 {
-    public class BattleDialogue_GrugIntro : BattleSequence
+    public class BattleSequence_GrugIntro : BattleSequence
     {
         public override TriggerType Trigger => TriggerType.TurnStart;
 

@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace VerticalSlice
 {
-    public class BattleDialogue_FirstReviveStart : BattleSequence
+    public class BattleSequence_FirstReviveStart : BattleSequence
     {
         public override TriggerType Trigger => TriggerType.MoveStart;
 
