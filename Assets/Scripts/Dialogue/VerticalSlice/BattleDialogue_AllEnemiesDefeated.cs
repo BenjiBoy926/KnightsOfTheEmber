@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace VerticalSlice
 {
-    public class BattleDialogue_AllEnemiesDefeated : BattleDialogueSequence
+    public class BattleDialogue_AllEnemiesDefeated : BattleSequence
     {
         public override TriggerType Trigger => TriggerType.MoveEnd;
 

@@ -11,7 +11,7 @@ using UnityEngine.Tilemaps;
 [RequireComponent(typeof(BattleHistory))]
 [RequireComponent(typeof(BattleCondition))]
 [RequireComponent(typeof(BattleOutro))]
-[RequireComponent(typeof(BattleDialogue))]
+[RequireComponent(typeof(BattleSequencer))]
 public class Battle : MonoBehaviour
 {
     public bool IsInProgress => _isInProgress;
@@ -30,7 +30,7 @@ public class Battle : MonoBehaviour
         get => _camera.Position;
         set => _camera.Position = value;
     }
-    public bool IsDialoguePlaying => _dialogue.IsPlaying;
+    public bool IsDialoguePlaying => _sequencer.IsPlaying;
     public int CurrentStateIndex => _history.CurrentStateIndex;
     public int StateCount => _history.StateCount;
     public int LatestStateIndex => _history.LatestStateIndex;
@@ -42,7 +42,7 @@ public class Battle : MonoBehaviour
     private BattleCamera _camera;
     private BattleCondition _condition;
     private BattleOutro _outro;
-    private BattleDialogue _dialogue;
+    private BattleSequencer _sequencer;
     private Player _player;
     private ComputerPlayer _computerPlayer;
     private readonly HashSet<Character> _allCharacters = new();
@@ -59,7 +59,7 @@ public class Battle : MonoBehaviour
         _camera = GetComponentInChildren<BattleCamera>();
         _condition = GetComponent<BattleCondition>();
         _outro = GetComponent<BattleOutro>();
-        _dialogue = GetComponent<BattleDialogue>();
+        _sequencer = GetComponent<BattleSequencer>();
         _player = GetComponentInChildren<Player>();
         _computerPlayer = GetComponentInChildren<ComputerPlayer>();
 
@@ -353,25 +353,25 @@ public class Battle : MonoBehaviour
         return _condition.AreAllPlayersAlive();
     }
 
-    // Dialogue ===
+    // Sequencer ===
 
-    public IEnumerator GetMoveStartDialogue(Character interactor, Character target)
+    public IEnumerator GetMoveStartSequence(Character interactor, Character target)
     {
-        return _dialogue.GetMoveStartDialogue(interactor, target);
+        return _sequencer.GetMoveStartSequence(interactor, target);
     }
 
-    public IEnumerator GetMoveFinishDialogue(Character interactor, Character target)
+    public IEnumerator GetMoveFinishSequence(Character interactor, Character target)
     {
-        return _dialogue.GetMoveFinishDialogue(interactor, target);
+        return _sequencer.GetMoveFinishSequence(interactor, target);
     }
 
-    public IEnumerator GetTurnStartDialogue()
+    public IEnumerator GetTurnStartSequence()
     {
-        return _dialogue.GetTurnStartDialogue();
+        return _sequencer.GetTurnStartSequence();
     }
 
-    public IEnumerator GetUndoRedoEndDialogue()
+    public IEnumerator GetUndoRedoEndSequence()
     {
-        return _dialogue.GetUndoRedoEndDialogue();
+        return _sequencer.GetUndoRedoEndSequence();
     }
 }

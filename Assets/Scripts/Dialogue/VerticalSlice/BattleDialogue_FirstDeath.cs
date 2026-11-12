@@ -3,10 +3,9 @@ using static UniqueCharacters;
 
 namespace VerticalSlice
 {
-    public class BattleDialogue_FirstDeath : BattleDialogueSequence
+    public class BattleDialogue_FirstDeath : BattleSequence
     {
         public override TriggerType Trigger => TriggerType.MoveEnd;
-        public override int Priority => 10;
 
         public override bool ShouldPlay(Character interactor, Character target)
         {

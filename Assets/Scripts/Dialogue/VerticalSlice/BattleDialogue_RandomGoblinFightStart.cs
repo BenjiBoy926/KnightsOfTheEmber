@@ -4,7 +4,7 @@ using UnityEngine;
 namespace VerticalSlice
 {
     [RequireComponent(typeof(Character))]
-    public class BattleDialogue_RandomGoblinFightStart : BattleDialogueSequence
+    public class BattleDialogue_RandomGoblinFightStart : BattleSequence
     {
         public override TriggerType Trigger => TriggerType.MoveStart;
 

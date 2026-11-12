@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class BattleDialogueSequence : MonoBehaviour
+public abstract class BattleSequence : MonoBehaviour
 {
     public enum TriggerType
     {
@@ -15,9 +15,9 @@ public abstract class BattleDialogueSequence : MonoBehaviour
     protected Battle Battle => _battle;
     public bool HasPlayed => _timesPlayed > 0;
     public abstract TriggerType Trigger { get; }
-    public virtual int Priority => 0;
-    public static readonly Comparison<BattleDialogueSequence> Comparison = (a, b) => a.Priority.CompareTo(b.Priority);
+    public static readonly Comparison<BattleSequence> Comparison = (a, b) => a._priority.CompareTo(b._priority);
 
+    [SerializeField] private int _priority = 0;
     private Battle _battle;
     private int _timesPlayed = 0;
 

@@ -215,7 +215,7 @@ public class Character : MonoBehaviour
             other.LookAt(Position);
         }
         yield return MoveToCellCenter();
-        yield return _battle.GetMoveStartDialogue(this, other);
+        yield return _battle.GetMoveStartSequence(this, other);
     }
 
     public YieldInstruction MoveToCellCenter()
@@ -225,7 +225,7 @@ public class Character : MonoBehaviour
 
     public IEnumerator EndMoveSequence(Character other)
     {
-        yield return _battle.GetMoveFinishDialogue(this, other);
+        yield return _battle.GetMoveFinishSequence(this, other);
 
         ChangeEnergy(-1);
 

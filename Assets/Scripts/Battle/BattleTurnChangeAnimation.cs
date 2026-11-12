@@ -39,6 +39,6 @@ public class BattleTurnChangeAnimation : MonoBehaviour
         yield return _overlay.FadeOut();
         _isPlaying = false;
 
-        yield return _battle.GetTurnStartDialogue();
+        yield return _battle.GetTurnStartSequence();
     }
 }

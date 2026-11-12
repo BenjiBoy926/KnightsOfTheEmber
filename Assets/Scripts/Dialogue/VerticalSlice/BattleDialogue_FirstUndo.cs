@@ -3,7 +3,7 @@ using static UniqueCharacters;
 
 namespace VerticalSlice
 {
-    public class BattleDialogue_FirstUndo : BattleDialogueSequence
+    public class BattleDialogue_FirstUndo : BattleSequence
     {
         public override TriggerType Trigger => TriggerType.UndoRedoEnd;
 
