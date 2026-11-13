@@ -30,14 +30,14 @@ public class BattleCameraGlide : MonoBehaviour
 
     public void End()
     {
-        StopAllCoroutines();
+        CoroutineRunner.StopAll(this);
         _coroutine = null;
     }
 
     private Coroutine Begin(IEnumerator sequence)
     {
-        StopAllCoroutines();
-        _coroutine = StartCoroutine(sequence);
+        CoroutineRunner.StopAll(this);
+        _coroutine = CoroutineRunner.Play(this, sequence);
         return _coroutine;
     }
 

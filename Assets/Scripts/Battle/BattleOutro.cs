@@ -12,7 +12,7 @@ public class BattleOutro : MonoBehaviour
 
     public void Play()
     {
-        StartCoroutine(PlaySequence());
+        CoroutineRunner.Play(this, PlaySequence());
     }
 
     private IEnumerator PlaySequence()

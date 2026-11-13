@@ -147,9 +147,9 @@ public class CharacterAnimator : MonoBehaviour
         _isRunning = false;
         if (_oneShotRoutine != null)
         {
-            StopCoroutine(_oneShotRoutine);
+            CoroutineRunner.StopAll(this);
         }
-        _oneShotRoutine = StartCoroutine(PlayOneShotRoutine(action));
+        _oneShotRoutine = CoroutineRunner.Play(this, PlayOneShotRoutine(action));
         return _oneShotRoutine;
     }
 

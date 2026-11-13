@@ -18,8 +18,8 @@ public class CharacterWalker : MonoBehaviour
     public Coroutine WalkToNodeClamped(Node node)
     {
         BuildPathClamped(node, _path);
-        StopAllCoroutines();
-        return StartCoroutine(WalkOnPath(_path));
+        CoroutineRunner.StopAll(this);
+        return CoroutineRunner.Play(this, WalkOnPath(_path));
     }
 
     private IEnumerator WalkOnPath(List<Vector2Int> path)

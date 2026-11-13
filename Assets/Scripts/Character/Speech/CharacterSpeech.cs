@@ -13,7 +13,7 @@ public class CharacterSpeech : MonoBehaviour
 
     public Coroutine Say(string text)
     {
-        StopAllCoroutines();
-        return StartCoroutine(_bubble.GetDisplaySequence(text));
+        CoroutineRunner.StopAll(this);
+        return CoroutineRunner.Play(this, _bubble.GetDisplaySequence(text));
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using TMPro;
 
@@ -25,8 +25,8 @@ public class BattleTurnChangeAnimation : MonoBehaviour
     public void Play(Faction faction)
     {
         gameObject.SetActive(true);
-        StopAllCoroutines();
-        StartCoroutine(GetPlaySequence(faction));
+        CoroutineRunner.StopAll(this);
+        CoroutineRunner.Play(this, GetPlaySequence(faction));
     }
 
     private IEnumerator GetPlaySequence(Faction faction)

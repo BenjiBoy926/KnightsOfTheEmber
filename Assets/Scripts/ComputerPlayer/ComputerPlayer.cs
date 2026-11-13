@@ -48,13 +48,13 @@ public class ComputerPlayer : MonoBehaviour
         if (faction != _player.Faction)
         {
             _faction = faction;
-            StartCoroutine(Move());
+            CoroutineRunner.Play(this, Move());
         }
     }
 
     public void Stop()
     {
-        StopAllCoroutines();
+        CoroutineRunner.StopAll(this);
     }
 
     private IEnumerator Move()

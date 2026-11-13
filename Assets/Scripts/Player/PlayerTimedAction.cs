@@ -57,7 +57,7 @@ public abstract class PlayerTimedAction : MonoBehaviour
         _isTriggered = false;
         if (_isScheduled)
         {
-            StopAllCoroutines();
+            CoroutineRunner.StopAll(this);
             _ui.CancelAnimation();
         }
     }
@@ -68,7 +68,7 @@ public abstract class PlayerTimedAction : MonoBehaviour
         if (!IsAvailable())
             return false;
 
-        StartCoroutine(ExecutionSequence(duration));
+        CoroutineRunner.Play(this, ExecutionSequence(duration));
         _ui.Begin(this, duration);
         return true;
     }
