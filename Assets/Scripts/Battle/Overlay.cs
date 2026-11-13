@@ -22,15 +22,20 @@ public class Overlay : MonoBehaviour
         return FadeTo(_fadeAlpha);
     }
 
-    public IEnumerator FadeOut()
+    public Coroutine FadeOut()
     {
-        yield return FadeTo(0f);
-        gameObject.SetActive(false);
+        return StartCoroutine(GetFadeOutSequence());
     }
 
     public void SetAlpha(float alpha)
     {
         _graphic.color = _graphic.color.SetAlpha(alpha);
+    }
+
+    private IEnumerator GetFadeOutSequence()
+    {
+        yield return FadeTo(0f);
+        gameObject.SetActive(false);
     }
 
     private YieldInstruction FadeTo(float alpha)
