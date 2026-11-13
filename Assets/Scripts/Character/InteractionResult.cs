@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.TextCore.Text;
 
 public readonly struct InteractionResult
 {
@@ -16,15 +15,15 @@ public readonly struct InteractionResult
     {
         if (interactor.Faction == target.Faction)
         {
-            return PredictHealResult(interactor, target);
+            return CalculateHealResult(interactor, target);
         }
         else
         {
-            return PredictAttackResult(interactor, target);
+            return CalculateAttackResult(interactor, target);
         }
     }
 
-    private static InteractionResult PredictHealResult(Character interactor, Character target)
+    private static InteractionResult CalculateHealResult(Character interactor, Character target)
     {
         CharacterInfo selfInfo = new(interactor.CurrentHealth, interactor.CurrentEnergy - 1);
 
@@ -35,7 +34,7 @@ public readonly struct InteractionResult
         return new(selfInfo, otherInfo);
     }
 
-    private static InteractionResult PredictAttackResult(Character interactor, Character target)
+    private static InteractionResult CalculateAttackResult(Character interactor, Character target)
     {
         int otherHealth = CalculateHealthAfterHit(target.CurrentHealth, interactor.CurrentPower);
         CharacterInfo targetInfo = new(otherHealth, target.CurrentEnergy);
